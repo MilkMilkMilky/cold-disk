@@ -58,10 +58,21 @@ def get_standard_halfheight_test(
 ) -> float | np.ndarray:
     alpha_viscosity, dimless_bhmass = np.asarray(alpha_viscosity), np.asarray(dimless_bhmass)
     dimless_accrate, dimless_radius = np.asarray(dimless_accrate), np.asarray(dimless_radius)
-    standard_halfheight_test = (
-        1.5e3 * alpha_viscosity ** (-1 / 10) * dimless_bhmass ** (9 / 10) * (dimless_accrate / 0.1) ** (3 / 20)
-    )
-    standard_halfheight_test *= dimless_radius ** (9 / 8) * (1 - np.sqrt(3 / dimless_radius)) ** (3 / 20)
+    criterion_1 = (alpha_viscosity * dimless_bhmass) ** (-1 / 8) / 170
+    criterion_2 = 150 * (alpha_viscosity * dimless_bhmass) ** (2 / 21) * (dimless_accrate / 0.1) ** (16 / 21)
+    criterion_3 = 6.3e3 * (dimless_accrate / 0.1) ** (2 / 3)
+    if (dimless_accrate / 0.1) >= criterion_1 and dimless_radius < criterion_2:
+        standard_halfheight_test = 5.5e4 * dimless_bhmass * dimless_accrate * (1 - np.sqrt(3 / dimless_radius))
+    elif dimless_radius < criterion_3:
+        standard_halfheight_test = (
+            2.7e3 * alpha_viscosity ** (-1 / 10) * dimless_bhmass ** (9 / 10) * (dimless_accrate / 0.1) ** (1 / 5)
+        )
+        standard_halfheight_test *= dimless_radius ** (21 / 20) * (1 - np.sqrt(3 / dimless_radius)) ** (1 / 5)
+    else:
+        standard_halfheight_test = (
+            1.5e3 * alpha_viscosity ** (-1 / 10) * dimless_bhmass ** (9 / 10) * (dimless_accrate / 0.1) ** (3 / 20)
+        )
+        standard_halfheight_test *= dimless_radius ** (9 / 8) * (1 - np.sqrt(3 / dimless_radius)) ** (3 / 20)
     return standard_halfheight_test
 
 
@@ -74,10 +85,27 @@ def get_standard_arealdensity_test(
 ) -> float | np.ndarray:
     alpha_viscosity, dimless_bhmass = np.asarray(alpha_viscosity), np.asarray(dimless_bhmass)
     dimless_accrate, dimless_radius = np.asarray(dimless_accrate), np.asarray(dimless_radius)
-    standard_arealdensity_test = (
-        1.4e5 * alpha_viscosity ** (-4 / 5) * dimless_bhmass ** (1 / 5) * (dimless_accrate / 0.1) ** (7 / 10)
-    )
-    standard_arealdensity_test *= dimless_radius ** (-3 / 4) * (1 - np.sqrt(3 / dimless_radius)) ** (7 / 10)
+    criterion_1 = (alpha_viscosity * dimless_bhmass) ** (-1 / 8) / 170
+    criterion_2 = 150 * (alpha_viscosity * dimless_bhmass) ** (2 / 21) * (dimless_accrate / 0.1) ** (16 / 21)
+    criterion_3 = 6.3e3 * (dimless_accrate / 0.1) ** (2 / 3)
+    if (dimless_accrate / 0.1) >= criterion_1 and dimless_radius < criterion_2:
+        standard_arealdensity_test = (
+            100
+            * (alpha_viscosity) ** (-1)
+            * (dimless_accrate / 0.1) ** (-1)
+            * dimless_radius ** (3 / 2)
+            * (1 - np.sqrt(3 / dimless_radius)) ** (-1)
+        )
+    elif dimless_radius < criterion_3:
+        standard_arealdensity_test = (
+            4.3e4 * alpha_viscosity ** (-4 / 5) * dimless_bhmass ** (1 / 5) * (dimless_accrate / 0.1) ** (3 / 5)
+        )
+        standard_arealdensity_test *= dimless_radius ** (-3 / 5) * (1 - np.sqrt(3 / dimless_radius)) ** (3 / 5)
+    else:
+        standard_arealdensity_test = (
+            1.4e5 * alpha_viscosity ** (-4 / 5) * dimless_bhmass ** (1 / 5) * (dimless_accrate / 0.1) ** (7 / 10)
+        )
+        standard_arealdensity_test *= dimless_radius ** (-3 / 4) * (1 - np.sqrt(3 / dimless_radius)) ** (7 / 10)
     return standard_arealdensity_test
 
 
@@ -90,10 +118,24 @@ def get_standard_density_test(
 ) -> float | np.ndarray:
     alpha_viscosity, dimless_bhmass = np.asarray(alpha_viscosity), np.asarray(dimless_bhmass)
     dimless_accrate, dimless_radius = np.asarray(dimless_accrate), np.asarray(dimless_radius)
-    standard_density_test = (
-        4.7 * alpha_viscosity ** (-7 / 10) * dimless_bhmass ** (-7 / 10) * (dimless_accrate / 0.1) ** (11 / 20)
-    )
-    standard_density_test *= dimless_radius ** (-15 / 8) * (1 - np.sqrt(3 / dimless_radius)) ** (11 / 20)
+    criterion_1 = (alpha_viscosity * dimless_bhmass) ** (-1 / 8) / 170
+    criterion_2 = 150 * (alpha_viscosity * dimless_bhmass) ** (2 / 21) * (dimless_accrate / 0.1) ** (16 / 21)
+    criterion_3 = 6.3e3 * (dimless_accrate / 0.1) ** (2 / 3)
+    if (dimless_accrate / 0.1) >= criterion_1 and dimless_radius < criterion_2:
+        standard_density_test = (
+            9e-4 * (alpha_viscosity) ** (-1) * (dimless_bhmass) ** (-1) * (dimless_accrate / 0.1) ** (-2)
+        )
+        standard_density_test *= dimless_radius ** (3 / 2) * (1 - np.sqrt(3 / dimless_radius)) ** (-2)
+    elif dimless_radius < criterion_3:
+        standard_density_test = (
+            8 * alpha_viscosity ** (-7 / 10) * dimless_bhmass ** (-7 / 10) * (dimless_accrate / 0.1) ** (2 / 5)
+        )
+        standard_density_test *= dimless_radius ** (-33 / 20) * (1 - np.sqrt(3 / dimless_radius)) ** (2 / 5)
+    else:
+        standard_density_test = (
+            4.7 * alpha_viscosity ** (-7 / 10) * dimless_bhmass ** (-7 / 10) * (dimless_accrate / 0.1) ** (11 / 20)
+        )
+        standard_density_test *= dimless_radius ** (-15 / 8) * (1 - np.sqrt(3 / dimless_radius)) ** (11 / 20)
     return standard_density_test
 
 
@@ -106,10 +148,27 @@ def get_standard_radvel_test(
 ) -> float | np.ndarray:
     alpha_viscosity, dimless_bhmass = np.asarray(alpha_viscosity), np.asarray(dimless_bhmass)
     dimless_accrate, dimless_radius = np.asarray(dimless_accrate), np.asarray(dimless_radius)
-    standard_radvel_test = (
-        -5.4e5 * alpha_viscosity ** (4 / 5) * dimless_bhmass ** (-1 / 5) * (dimless_accrate / 0.1) ** (3 / 10)
-    )
-    standard_radvel_test *= dimless_radius ** (-1 / 4) * (1 - np.sqrt(3 / dimless_radius)) ** (-7 / 10)
+    criterion_1 = (alpha_viscosity * dimless_bhmass) ** (-1 / 8) / 170
+    criterion_2 = 150 * (alpha_viscosity * dimless_bhmass) ** (2 / 21) * (dimless_accrate / 0.1) ** (16 / 21)
+    criterion_3 = 6.3e3 * (dimless_accrate / 0.1) ** (2 / 3)
+    if (dimless_accrate / 0.1) >= criterion_1 and dimless_radius < criterion_2:
+        standard_radvel_test = (
+            -7.6e8
+            * alpha_viscosity
+            * (dimless_accrate / 0.1) ** 2
+            * (dimless_radius) ** (-5 / 2)
+            * (1 - np.sqrt(3 / dimless_radius))
+        )
+    elif dimless_radius < criterion_3:
+        standard_radvel_test = (
+            -1.7e6 * alpha_viscosity ** (4 / 5) * dimless_bhmass ** (-1 / 5) * (dimless_accrate / 0.1) ** (2 / 5)
+        )
+        standard_radvel_test *= dimless_radius ** (-2 / 5) * (1 - np.sqrt(3 / dimless_radius)) ** (-3 / 5)
+    else:
+        standard_radvel_test = (
+            -5.4e5 * alpha_viscosity ** (4 / 5) * dimless_bhmass ** (-1 / 5) * (dimless_accrate / 0.1) ** (3 / 10)
+        )
+        standard_radvel_test *= dimless_radius ** (-1 / 4) * (1 - np.sqrt(3 / dimless_radius)) ** (-7 / 10)
     return standard_radvel_test
 
 
@@ -122,10 +181,21 @@ def get_standard_temperature_test(
 ) -> float | np.ndarray:
     alpha_viscosity, dimless_bhmass = np.asarray(alpha_viscosity), np.asarray(dimless_bhmass)
     dimless_accrate, dimless_radius = np.asarray(dimless_accrate), np.asarray(dimless_radius)
-    standard_temperature_test = (
-        6.9e7 * alpha_viscosity ** (-1 / 5) * dimless_bhmass ** (-1 / 5) * (dimless_accrate / 0.1) ** (3 / 10)
-    )
-    standard_temperature_test *= dimless_radius ** (-3 / 4) * (1 - np.sqrt(3 / dimless_radius)) ** (3 / 10)
+    criterion_1 = (alpha_viscosity * dimless_bhmass) ** (-1 / 8) / 170
+    criterion_2 = 150 * (alpha_viscosity * dimless_bhmass) ** (2 / 21) * (dimless_accrate / 0.1) ** (16 / 21)
+    criterion_3 = 6.3e3 * (dimless_accrate / 0.1) ** (2 / 3)
+    if (dimless_accrate / 0.1) >= criterion_1 and dimless_radius < criterion_2:
+        standard_temperature_test = 4.9e7 * (alpha_viscosity * dimless_bhmass) ** (-1 / 4) * dimless_radius ** (-3 / 8)
+    elif dimless_radius < criterion_3:
+        standard_temperature_test = (
+            2.2e8 * alpha_viscosity ** (-1 / 5) * dimless_bhmass ** (-1 / 5) * (dimless_accrate / 0.1) ** (2 / 5)
+        )
+        standard_temperature_test *= dimless_radius ** (-9 / 10) * (1 - np.sqrt(3 / dimless_radius)) ** (2 / 5)
+    else:
+        standard_temperature_test = (
+            6.9e7 * alpha_viscosity ** (-1 / 5) * dimless_bhmass ** (-1 / 5) * (dimless_accrate / 0.1) ** (3 / 10)
+        )
+        standard_temperature_test *= dimless_radius ** (-3 / 4) * (1 - np.sqrt(3 / dimless_radius)) ** (3 / 10)
     return standard_temperature_test
 
 
@@ -138,14 +208,27 @@ def get_standard_opticaldepth_test(
 ) -> float | np.ndarray:
     alpha_viscosity, dimless_bhmass = np.asarray(alpha_viscosity), np.asarray(dimless_bhmass)
     dimless_accrate, dimless_radius = np.asarray(dimless_accrate), np.asarray(dimless_radius)
-    standard_opticaldepth_test = (
-        79 * alpha_viscosity ** (-4 / 5) * dimless_bhmass ** (1 / 5) * (dimless_accrate / 0.1) ** (1 / 5)
-    )
-    standard_opticaldepth_test *= (1 - np.sqrt(3 / dimless_radius)) ** (1 / 5)
+    criterion_1 = (alpha_viscosity * dimless_bhmass) ** (-1 / 8) / 170
+    criterion_2 = 150 * (alpha_viscosity * dimless_bhmass) ** (2 / 21) * (dimless_accrate / 0.1) ** (16 / 21)
+    criterion_3 = 6.3e3 * (dimless_accrate / 0.1) ** (2 / 3)
+    if (dimless_accrate / 0.1) >= criterion_1 and dimless_radius < criterion_2:
+        standard_opticaldepth_test = (
+            8.4e-3 * alpha_viscosity ** (-17 / 16) * dimless_bhmass ** (-1 / 16) * (dimless_accrate / 0.1) ** (-2)
+        )
+        standard_opticaldepth_test *= dimless_radius ** (93 / 32) * (1 - np.sqrt(3 / dimless_radius)) ** (-2)
+    elif dimless_radius < criterion_3:
+        standard_opticaldepth_test = (
+            24 * alpha_viscosity ** (-4 / 5) * dimless_bhmass ** (1 / 5) * (dimless_accrate / 0.1) ** (1 / 10)
+        )
+        standard_opticaldepth_test *= dimless_radius ** (3 / 20) * (1 - np.sqrt(3 / dimless_radius)) ** (1 / 10)
+    else:
+        standard_opticaldepth_test = (
+            79 * alpha_viscosity ** (-4 / 5) * dimless_bhmass ** (1 / 5) * (dimless_accrate / 0.1) ** (1 / 5)
+        )
+        standard_opticaldepth_test *= (1 - np.sqrt(3 / dimless_radius)) ** (1 / 5)
     return standard_opticaldepth_test
 
 
-@solve_tools.vectorize_functions
 def standard_disk_solver(*, alpha_viscosity, dimless_bhmass, dimless_accrate, dimless_radius) -> np.ndarray:
     halfheight_test = get_standard_halfheight_test(
         alpha_viscosity=alpha_viscosity,
@@ -196,7 +279,7 @@ def standard_disk_solver(*, alpha_viscosity, dimless_bhmass, dimless_accrate, di
         temperature_test,
         opticaldepth_test,
     ])
-
+    print("guess_solution =", guess_solution)
     def get_standard_equations(x) -> np.ndarray:
         halfheight, arealdensity, density, radvel, temperature, opticaldepth = x
         radius = solve_tools.get_radius_fromdimless(dimless_bhmass=dimless_bhmass, dimless_radius=dimless_radius)
@@ -223,7 +306,7 @@ def standard_disk_solver(*, alpha_viscosity, dimless_bhmass, dimless_accrate, di
 
         return np.array([eq_1, eq_2, eq_3, eq_4, eq_5, eq_6])
 
-    standard_solve = sp.optimize.root(get_standard_equations, guess_solution)
+    standard_solve = sp.optimize.root(get_standard_equations, guess_solution, method="lm")
     if standard_solve.success:
         return np.array(standard_solve.x)
     else:
@@ -383,3 +466,11 @@ if __name__ == "__main__":
     dimless_radius_in = model_params.dimless_radius_in[0]
     dimless_radius_out = model_params.dimless_radius_out[0]
     dimless_radius = dimless_radius_out
+    dimless_radius = 100
+    temperature = get_standard_temperature_result(
+        alpha_viscosity=alpha_viscosity,
+        dimless_bhmass=dimless_bhmass,
+        dimless_accrate=dimless_accrate,
+        dimless_radius=dimless_radius,
+    )
+    print(temperature)

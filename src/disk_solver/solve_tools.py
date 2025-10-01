@@ -7,30 +7,6 @@ import scipy as sp
 from disk_solver.parameter_init import cgs_consts
 
 
-def vectorize_functions(func) -> Callable:
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs) -> np.ndarray:
-        # Turn both args and kwargs into arrays
-        arrays = [np.asarray(a) for a in args] + [np.asarray(v) for v in kwargs.values()]
-        bcast = np.broadcast_arrays(*arrays)
-        out_shape = bcast[0].shape
-
-        # Split back args and kwargs after broadcasting
-        arg_arrays = bcast[: len(args)]
-        kwarg_arrays = dict(zip(kwargs.keys(), bcast[len(args) :], strict=False))
-
-        results = []
-        for idx in np.ndindex(out_shape):
-            scalars = [arr[idx] for arr in arg_arrays]
-            kw_scalars = {k: arr[idx] for k, arr in kwarg_arrays.items()}
-            results.append(func(*scalars, **kw_scalars))
-
-        sample_output = np.asarray(results[0])
-        return np.array(results).reshape(out_shape + sample_output.shape)
-
-    return wrapper
-
-
 def get_bhmass(*, dimless_bhmass) -> float | np.ndarray:
     dimless_bhmass = np.asarray(dimless_bhmass)
     bhmass = dimless_bhmass * cgs_consts.cgs_msun

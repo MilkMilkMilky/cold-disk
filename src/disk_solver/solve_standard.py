@@ -233,7 +233,7 @@ def get_standard_opticaldepth_test(*, par: DiskParams, dimless_radius) -> float 
     return standard_opticaldepth_test
 
 
-def standard_disk_solver(*, par: DiskParams, dimless_radius: float | np.ndarray) -> np.ndarray:
+def standard_disk_solver(*, par: DiskParams, dimless_radius: float) -> np.ndarray:
     halfheight_test = get_standard_halfheight_test(par=par, dimless_radius=dimless_radius)
     arealdensity_test = get_standard_arealdensity_test(par=par, dimless_radius=dimless_radius)
     density_test = get_standard_density_test(par=par, dimless_radius=dimless_radius)
@@ -279,40 +279,45 @@ def standard_disk_solver(*, par: DiskParams, dimless_radius: float | np.ndarray)
     else:
         raise ValueError(f"Did not converge: {standard_solve.message}")
 
-@solve_tools.vectorize_for_radius
 def get_standard_solve_result(
     *,
     par: DiskParams,
     dimless_radius: float | np.ndarray,
-    variable: str,
-) -> float:
-    solve_result = standard_disk_solver(par=par, dimless_radius=dimless_radius)
-    angvel = float(get_standard_angvel(par=par, dimless_radius=dimless_radius))
-    match variable:
-        case "halfheight":
-            return solve_result[0]
-        case "arealdensity":
-            return solve_result[1]
-        case "density":
-            return solve_result[2]
-        case "radvel":
-            return solve_result[3]
-        case "temperature":
-            return solve_result[4]
-        case "opticaldepth":
-            return solve_result[5]
-        case "angmom":
-            radius = float(solve_tools.get_radius_fromdimless(par=par, dimless_radius=dimless_radius))
-            angmom_result = angvel * radius**2
-            return angmom_result
-        case "coff_eta":
-            radvel = solve_result[3]
-            halfheight = solve_result[0]
-            soundvel = halfheight * angvel
-            coff_eta_result = (radvel / soundvel) ** 2
-            return coff_eta_result
-        case _:
-            raise ValueError("variable name invalid")
+) -> np.ndarray:
+    dimless_radius = np.atleast_1d(dimless_radius)
+    result_array = np.zeros(
+        len(dimless_radius),
+        dtype=[
+            ("halfheight", float),
+            ("arealdensity", float),
+            ("density", float),
+            ("radvel", float),
+            ("temperature", float),
+            ("opticaldepth", float),
+            ("angmom", float),
+            ("coff_eta", float),
+        ],
+    )
+    for i, r in enumerate(dimless_radius):
+        solve = standard_disk_solver(par=par, dimless_radius=r)
+        halfheight, arealdensity, density, radvel, temperature, opticaldepth = solve
+        angvel = float(get_standard_angvel(par=par, dimless_radius=r))
+        radius = float(solve_tools.get_radius_fromdimless(par=par, dimless_radius=r))
+        angmom = angvel * radius**2
+        coff_eta = (radvel / (halfheight * angvel)) ** 2
+        result_array[i] = (
+            halfheight,
+            arealdensity,
+            density,
+            radvel,
+            temperature,
+            opticaldepth,
+            angmom,
+            coff_eta,
+        )
+    if result_array.size == 1:
+        return result_array[0]
+    return result_array
 
 
 if __name__ == "__main__":
@@ -326,5 +331,5 @@ if __name__ == "__main__":
         dimless_radius_out=model_params.dimless_radius_out[0],
     )
     dimless_radius = np.arange(10, 1000, 10)
-    temperature = get_standard_solve_result(par=para, dimless_radius=dimless_radius, variable="temperature")
-    print(temperature)
+    result = get_standard_solve_result(par=para, dimless_radius=100)
+    print(result["coff_eta"])

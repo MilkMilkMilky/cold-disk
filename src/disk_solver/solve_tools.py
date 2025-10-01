@@ -1,7 +1,44 @@
+import functools
+import inspect
+from collections.abc import Callable
+from typing import Any
+
 import numpy as np
 import scipy as sp
 
 from disk_solver.parameter_init import DiskParams, cgs_consts
+
+
+def vectorize_for_radius(func: Callable, on_fail: Any = np.nan) -> Callable:
+    """Wrap a function to allow array-like inputs for a single argument `dimless_radius`.
+
+    - func: the original function to vectorize.
+    - on_fail: value to use when a single call raises an exception. Use 'raise' to re-raise.
+
+    Returns a new function that accepts a scalar or 1D array input for dimless_radius.
+    """
+
+    def wrapper(*args, dimless_radius=None, **kwargs) -> Any:
+        if dimless_radius is None:
+            raise ValueError("dimless_radius must be provided")
+        arr = np.atleast_1d(dimless_radius)
+        results = []
+
+        for r in arr:
+            try:
+                val = func(*args, dimless_radius=r, **kwargs)
+            except Exception:
+                if on_fail == "raise":
+                    raise
+                val = on_fail
+            results.append(val)
+
+        results = np.array(results)
+        if np.isscalar(dimless_radius) or (hasattr(dimless_radius, "shape") and dimless_radius.shape == ()):
+            return results.item()
+        return results
+
+    return wrapper
 
 
 def get_bhmass(*, par: DiskParams) -> float:

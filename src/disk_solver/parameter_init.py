@@ -71,4 +71,15 @@ cgs_consts = CGSConsts(
     cgs_kes=cgs_kes,
 )
 
-__all__ = ["cgs_consts"]
+@dataclass
+class DiskParams:
+    alpha_viscosity: float
+    dimless_accrate: float
+    dimless_bhmass: float
+    gas_index: float
+    wind_index: float
+    dimless_radius_in: float
+    dimless_radius_out: float
+
+
+__all__ = ["DiskParams", "cgs_consts"]

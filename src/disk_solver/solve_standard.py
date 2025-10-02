@@ -5,7 +5,6 @@ import scipy as sp
 
 from disk_solver.parameter_init import DiskParams, cgs_consts
 from disk_solver.solve_tools import DiskTools
-from parameters import model_params
 
 
 class StandardDisk:
@@ -34,14 +33,16 @@ class StandardDisk:
     @staticmethod
     def get_standard_averopacity(*, standard_density, standard_temperature) -> float | np.ndarray:
         standard_density, standard_temperature = np.asarray(standard_density), np.asarray(standard_temperature)
-        standard_averopacity = cgs_consts.cgs_kes + 6.4e22 * standard_density * standard_temperature ** (-3.5)
+        standard_averopacity = cgs_consts.cgs_kes + cgs_consts.cgs_kra * standard_density * standard_temperature ** (
+            -3.5
+        )
         return standard_averopacity
 
     @staticmethod
     def get_standard_kineviscocity(*, par: DiskParams, standard_arealdensity, dimless_radius) -> float | np.ndarray:
         standard_arealdensity = np.asanyarray(standard_arealdensity)
         dimless_radius = np.asarray(dimless_radius)
-        accrate = DiskTools.get_accrate_fromdimless(par=par)
+        accrate = DiskTools.get_accrate_fromdimless(par=par, dimless_accrate=par.dimless_accrate)
         part_1 = accrate / 3 / math.pi / standard_arealdensity
         part_2 = 1 - np.sqrt(3 / dimless_radius)
         standard_kineviscocity = part_1 * part_2
@@ -263,7 +264,7 @@ class StandardDisk:
         def get_standard_equations(x) -> np.ndarray:
             halfheight, arealdensity, density, radvel, temperature, opticaldepth = x
             radius = DiskTools.get_radius_fromdimless(par=par, dimless_radius=dimless_radius)
-            accrate = DiskTools.get_accrate_fromdimless(par=par)
+            accrate = DiskTools.get_accrate_fromdimless(par=par, dimless_accrate=par.dimless_accrate)
             angvel = StandardDisk.get_standard_angvel(par=par, dimless_radius=dimless_radius)
             pressure = StandardDisk.get_standard_pressure(standard_density=density, standard_temperature=temperature)
             soundvel = StandardDisk.get_standard_soundvel(standard_pressure=pressure, standard_density=density)

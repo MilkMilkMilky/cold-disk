@@ -63,9 +63,9 @@ class DiskTools:
         return radius_sch
 
     @staticmethod
-    def get_coeff_in(*, par: DiskParams) -> float:
-        numerator = (2**par.gas_index * sp.special.gamma(par.gas_index + 1)) ** 2
-        denominator = sp.special.gamma(2 * par.gas_index + 2)
+    def get_coeff_in(*, index) -> float:
+        numerator = (2**index * sp.special.gamma(index + 1)) ** 2
+        denominator = sp.special.gamma(2 * index + 2)
         coeff_in = numerator / denominator
         return coeff_in
 
@@ -77,9 +77,9 @@ class DiskTools:
         return radius
 
     @staticmethod
-    def get_accrate_fromdimless(*, par: DiskParams) -> float:
+    def get_accrate_fromdimless(*, par: DiskParams, dimless_accrate) -> float:
         accrate_edd = DiskTools.get_accrate_edd(par=par)
-        accrate = accrate_edd * par.dimless_accrate
+        accrate = accrate_edd * dimless_accrate
         return accrate
 
 __all__ = ["DiskTools"]

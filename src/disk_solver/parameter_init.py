@@ -15,6 +15,7 @@ cgs_amm = 0.617
 cgs_msun = consts.solar_mass * 1e3
 cgs_a = 4 * cgs_sb / cgs_c
 cgs_kes = 0.34
+cgs_kra = 6.4e22
 
 
 @dataclass(frozen=True)
@@ -50,10 +51,13 @@ class CGSConsts:
     """Solar mass (CGS, g)."""
 
     cgs_a: float
-    """Solar mass (CGS, erg·cm^-3·K^-4)."""
+    """Radiation constant.  (CGS, erg·cm^-3·K^-4)."""
 
     cgs_kes: float
-    """Solar mass (CGS, cm^2·g^-1)."""
+    """Electron scattering opacity. (CGS, cm^2·g^-1)."""
+
+    cgs_kra: float
+    """Kramers' opacity coefficient. (CGS, cm^5.5·g^-2·K^3.5)."""
 
 
 cgs_consts = CGSConsts(
@@ -69,6 +73,7 @@ cgs_consts = CGSConsts(
     cgs_msun=cgs_msun,
     cgs_a=cgs_a,
     cgs_kes=cgs_kes,
+    cgs_kra=cgs_kra,
 )
 
 @dataclass

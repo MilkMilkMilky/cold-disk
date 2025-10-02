@@ -1,7 +1,7 @@
 import numpy as np
 import scipy as sp
 
-from disk_solver import DiskParams, StandardDisk
+from disk_solver import DiskParams, DiskTools, SlimDisk, StandardDisk, cgs_consts
 from parameters import model_params
 
 if __name__ == "__main__":
@@ -14,6 +14,7 @@ if __name__ == "__main__":
         dimless_radius_in=model_params.dimless_radius_in[0],
         dimless_radius_out=model_params.dimless_radius_out[0],
     )
-    dimless_radius = np.arange(10, 1000, 10)
-    result = StandardDisk.get_standard_solve_result(par=para, dimless_radius=dimless_radius)
-    print(result["coff_eta"])
+    lin = SlimDisk.get_slim_angmomin(par=para, dimless_angmomin=1.7)
+    solve, solveinfo = SlimDisk.slim_disk_integrator(par=para, angmomin=lin)
+    print(solve)
+    print(solveinfo)

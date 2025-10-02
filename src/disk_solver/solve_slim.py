@@ -183,6 +183,37 @@ class SlimDisk:
         return slim_rveltosvel
 
     @staticmethod
+    def get_slim_rveltosvel_fromfirst(
+        *,
+        par: DiskParams,
+        dimless_radius,
+        angmom,
+        coff_eta,
+        angmomin,
+    ) -> float | np.ndarray:
+        dimless_radius = np.asarray(dimless_radius)
+        radius = DiskTools.get_radius_fromdimless(par=par, dimless_radius=dimless_radius)
+        arealpressure = SlimDisk.get_slim_arealpressure(par=par, radius=radius, angmom=angmom, angmomin=angmomin)
+        arealdensity = SlimDisk.get_slim_arealdensity(
+            par=par,
+            arealpressure=arealpressure,
+            coff_eta=coff_eta,
+            radius=radius,
+        )
+        halfheight = SlimDisk.get_slim_halfheight(
+            par=par,
+            radius=radius,
+            arealpressure=arealpressure,
+            arealdensity=arealdensity,
+        )
+        pressure = SlimDisk.get_slim_pressure(par=par, arealpressure=arealpressure, halfheight=halfheight)
+        density = SlimDisk.get_slim_density(par=par, arealdensity=arealdensity, halfheight=halfheight)
+        radvel = SlimDisk.get_slim_radvel(par=par, radius=radius, arealdensity=arealdensity)
+        soundvel = SlimDisk.get_slim_soundvel(pressure=pressure, density=density)
+        rveltosvel = np.abs(radvel / soundvel)
+        return rveltosvel
+
+    @staticmethod
     def get_slim_temperature_eff(*, fluxz) -> float | np.ndarray:
         fluxz = np.asarray(fluxz)
         slim_temperature_eff = np.float_power((fluxz / cgs_consts.cgs_sb), 0.25)
@@ -269,10 +300,15 @@ class SlimDisk:
         return deri_arr
 
     @staticmethod
-    def slim_disk_integrator(*, par: DiskParams, angmomin):
+    def get_slim_indep_array(*, par: DiskParams) -> np.ndarray:
         indep_array = np.arange(par.dimless_radius_out, par.dimless_radius_in, -0.01)
+        return indep_array
+
+    @staticmethod
+    def slim_disk_integrator(*, par: DiskParams, angmomin):
+        indep_array = SlimDisk.get_slim_indep_array(par=par)
         initvalue = SlimDisk.get_slim_initvalue(par=par)
-        solve, solveinfo = sp.integrate.odeint(
+        slimintresult, slimintinfo = sp.integrate.odeint(
             func=SlimDisk.slim_disk_model,
             y0=initvalue,
             t=indep_array,
@@ -283,7 +319,58 @@ class SlimDisk:
             atol=1e-10,
             rtol=1e-10,
         )
-        return solve, solveinfo
+        return slimintresult, slimintinfo
+
+    @staticmethod
+    def slim_disk_solver(*, par: DiskParams):
+        dimless_angmomin_min = 1
+        dimless_angmomin_max = 2
+        dimless_angmomin = 1.5
+        solve_counter = 0
+        rveltosvel_max = 0
+        while True:
+            angmomin = SlimDisk.get_slim_angmomin(par=par, dimless_angmomin=dimless_angmomin)
+            slimintresult, slimintinfo = SlimDisk.slim_disk_integrator(par=par, angmomin=angmomin)
+            dimless_radius_solve_array = slimintinfo["tcur"]
+            slimintresult = slimintresult[: dimless_radius_solve_array.shape[0]]
+            angmom_solve_array, coffeta_solve_array = slimintresult.T
+            dimless_radius_solve_min = np.min(dimless_radius_solve_array)
+            rveltosvel_solve_array = SlimDisk.get_slim_rveltosvel_fromfirst(
+                par=par,
+                dimless_radius=dimless_radius_solve_array,
+                angmom=angmom_solve_array,
+                coff_eta=coffeta_solve_array,
+                angmomin=angmomin,
+            )
+            rveltosvel_solve_array = np.asarray(rveltosvel_solve_array)
+            rveltosvel_max = max(
+                rveltosvel_max,
+                np.nanmax(rveltosvel_solve_array[np.isfinite(rveltosvel_solve_array)]),
+            )
+            print("dimless_angmomin:", dimless_angmomin)
+            print("dimless_radius_solve_min:", dimless_radius_solve_min)
+            print("rveltosvel_max:", rveltosvel_max)
+            if dimless_radius_solve_min > 3:
+                dimless_angmomin_max = dimless_angmomin
+            else:
+                if rveltosvel_max < 1:
+                    dimless_angmomin_min = dimless_angmomin
+                else:
+                    slim_solver_result = (dimless_radius_solve_array, angmom_solve_array, coffeta_solve_array)
+                    shoot_success = True
+                    break
+            dimless_angmomin = (dimless_angmomin_max + dimless_angmomin_min) / 2
+            solve_counter += 1
+            if solve_counter > 30:
+                slim_solver_result = (dimless_radius_solve_array, angmom_solve_array, coffeta_solve_array)
+                shoot_success = False
+                break
+        slim_solver_info = {
+            "dimless_angmomin": dimless_angmomin,
+            "shoot_count": solve_counter,
+            "shoot_succcess": shoot_success,
+        }
+        return slim_solver_result, slim_solver_info
 
 
 if __name__ == "__main__":

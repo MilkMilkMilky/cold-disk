@@ -10,6 +10,24 @@ from disk_solver.solve_tools import DiskTools
 class StandardDisk:
     @staticmethod
     def get_standard_angvel(*, par: DiskParams, dimless_radius) -> float | np.ndarray:
+        """Compute the angular velocity of a standard (Shakura-Sunyaev) accretion disk.
+
+        In the standard disk model, the angular velocity coincides with the Keplerian
+        angular velocity.
+
+        Parameters
+        ----------
+        par : DiskParams
+            An object containing the adjustable parameters of the accretion disk.
+        dimless_radius : float or np.ndarray
+            Dimensionless radius (in units of Schwarzschild radius).
+
+        Returns
+        -------
+        float or np.ndarray
+            Angular velocity at the given radius in CGS units. Matches the shape of `dimless_radius`.
+
+        """
         dimless_radius = np.asarray(dimless_radius)
         bhmass = DiskTools.get_bhmass(par=par)
         radius = DiskTools.get_radius_fromdimless(par=par, dimless_radius=dimless_radius)
@@ -18,6 +36,24 @@ class StandardDisk:
 
     @staticmethod
     def get_standard_pressure(*, standard_density, standard_temperature) -> float | np.ndarray:
+        """Compute the central pressure of a standard (Shakura-Sunyaev) accretion disk.
+
+        The pressure includes contributions from gas pressure and radiation pressure.
+
+        Parameters
+        ----------
+        standard_density : float or np.ndarray
+            Central mass density at the given radius in CGS units.
+        standard_temperature : float or np.ndarray
+            Central temperature at the given radius in CGS units.
+
+        Returns
+        -------
+        float or np.ndarray
+            Central pressure at the given radius in CGS units. Matches the shape of
+            `standard_density` and `standard_temperature`.
+
+        """
         standard_density, standard_temperature = np.asarray(standard_density), np.asarray(standard_temperature)
         part_1 = 2 * standard_density * cgs_consts.cgs_kb * standard_temperature / cgs_consts.cgs_mh
         part_2 = cgs_consts.cgs_a * standard_temperature**4 / 3
@@ -26,12 +62,48 @@ class StandardDisk:
 
     @staticmethod
     def get_standard_soundvel(*, standard_pressure, standard_density) -> float | np.ndarray:
+        """Compute the sound speed at the midplane of a standard (Shakura-Sunyaev) accretion disk.
+
+        The sound speed is defined from the central pressure and density.
+
+        Parameters
+        ----------
+        standard_pressure : float or np.ndarray
+            Central pressure at the given radius in CGS units.
+        standard_density : float or np.ndarray
+            Central mass density at the given radius in CGS units.
+
+        Returns
+        -------
+        float or np.ndarray
+            Sound speed at the given radius in CGS units. Matches the shape of
+            `standard_pressure` and `standard_density`.
+
+        """
         standard_pressure, standard_density = np.asarray(standard_pressure), np.asarray(standard_density)
         standard_soundvel = np.sqrt(standard_pressure / standard_density)
         return standard_soundvel
 
     @staticmethod
     def get_standard_averopacity(*, standard_density, standard_temperature) -> float | np.ndarray:
+        """Compute the Rosseland mean opacity at the midplane of a standard (Shakura-Sunyaev) accretion disk.
+
+        The opacity includes contributions from electron scattering and free-free absorption.
+
+        Parameters
+        ----------
+        standard_density : float or np.ndarray
+            Central mass density at the given radius in CGS units.
+        standard_temperature : float or np.ndarray
+            Central temperature at the given radius in CGS units.
+
+        Returns
+        -------
+        float or np.ndarray
+            Rosseland mean opacity in CGS units. Matches the shape of `standard_density`
+            and `standard_temperature`.
+
+        """
         standard_density, standard_temperature = np.asarray(standard_density), np.asarray(standard_temperature)
         standard_averopacity = cgs_consts.cgs_kes + cgs_consts.cgs_kra * standard_density * standard_temperature ** (
             -3.5
@@ -40,6 +112,28 @@ class StandardDisk:
 
     @staticmethod
     def get_standard_kineviscocity(*, par: DiskParams, standard_arealdensity, dimless_radius) -> float | np.ndarray:
+        """Compute the kinematic viscosity of a standard (Shakura-Sunyaev) accretion disk.
+
+        The kinematic viscosity is derived from the accretion rate and local surface density,
+        following the standard disk prescription. It is often referred to as the effective
+        "viscous transport coefficient."
+
+        Parameters
+        ----------
+        par : DiskParams
+            An object containing the adjustable parameters of the accretion disk.
+        standard_arealdensity : float or np.ndarray
+            Surface (areal) density at the given radius in CGS units.
+        dimless_radius : float or np.ndarray
+            Dimensionless radius (in units of Schwarzschild radius).
+
+        Returns
+        -------
+        float or np.ndarray
+            Kinematic viscosity at the given radius in CGS units. Matches the shape of
+            `standard_arealdensity` and `dimless_radius`.
+
+        """
         standard_arealdensity = np.asanyarray(standard_arealdensity)
         dimless_radius = np.asarray(dimless_radius)
         accrate = DiskTools.get_accrate_fromdimless(par=par, dimless_accrate=par.dimless_accrate)
@@ -50,6 +144,27 @@ class StandardDisk:
 
     @staticmethod
     def get_standard_halfheight_test(*, par: DiskParams, dimless_radius) -> float | np.ndarray:
+        """Estimate the half-thickness of a standard (Shakura-Sunyaev) accretion disk.
+
+        This function provides a heuristic or "test" solution for the disk half-height
+        based on semi-analytic scaling relations derived from self-similar solutions
+        of the standard disk equations. The estimate depends on the dimensionless radius
+        and the disk parameters, including viscosity, black hole mass, and accretion rate.
+
+        Parameters
+        ----------
+        par : DiskParams
+            An object containing the adjustable parameters of the accretion disk.
+        dimless_radius : float or np.ndarray
+            Dimensionless radius (in units of Schwarzschild radius).
+
+        Returns
+        -------
+        float or np.ndarray
+            Estimated half-thickness at the given radius in CGS units. Matches the shape
+            of `dimless_radius`.
+
+        """
         dimless_radius = np.asarray(dimless_radius)
         criterion_1 = (par.alpha_viscosity * par.dimless_bhmass) ** (-1 / 8) / 170
         criterion_2 = (
@@ -80,6 +195,27 @@ class StandardDisk:
 
     @staticmethod
     def get_standard_arealdensity_test(*, par: DiskParams, dimless_radius) -> float | np.ndarray:
+        """Estimate the surface (areal) density of a standard (Shakura-Sunyaev) accretion disk.
+
+        This function provides a heuristic or "test" solution for the disk areal density
+        based on semi-analytic scaling relations derived from self-similar solutions
+        of the standard disk equations. The estimate depends on the dimensionless radius
+        and the disk parameters, including viscosity, black hole mass, and accretion rate.
+
+        Parameters
+        ----------
+        par : DiskParams
+            An object containing the adjustable parameters of the accretion disk.
+        dimless_radius : float or np.ndarray
+            Dimensionless radius (in units of Schwarzschild radius).
+
+        Returns
+        -------
+        float or np.ndarray
+            Estimated surface (areal) density at the given radius in CGS units. Matches
+            the shape of `dimless_radius`.
+
+        """
         dimless_radius = np.asarray(dimless_radius)
         criterion_1 = (par.alpha_viscosity * par.dimless_bhmass) ** (-1 / 8) / 170
         criterion_2 = (
@@ -114,6 +250,27 @@ class StandardDisk:
 
     @staticmethod
     def get_standard_density_test(*, par: DiskParams, dimless_radius) -> float | np.ndarray:
+        """Estimate the central mass density of a standard (Shakura-Sunyaev) accretion disk.
+
+        This function provides a heuristic or "test" solution for the midplane density
+        based on semi-analytic scaling relations derived from self-similar solutions
+        of the standard disk equations. The estimate depends on the dimensionless radius
+        and the disk parameters, including viscosity, black hole mass, and accretion rate.
+
+        Parameters
+        ----------
+        par : DiskParams
+            An object containing the adjustable parameters of the accretion disk.
+        dimless_radius : float or np.ndarray
+            Dimensionless radius (in units of Schwarzschild radius).
+
+        Returns
+        -------
+        float or np.ndarray
+            Estimated central (midplane) density at the given radius in CGS units. Matches
+            the shape of `dimless_radius`.
+
+        """
         dimless_radius = np.asarray(dimless_radius)
         criterion_1 = (par.alpha_viscosity * par.dimless_bhmass) ** (-1 / 8) / 170
         criterion_2 = (
@@ -148,6 +305,26 @@ class StandardDisk:
 
     @staticmethod
     def get_standard_radvel_test(*, par: DiskParams, dimless_radius) -> float | np.ndarray:
+        """Estimate the radial inflow velocity of a standard (Shakura-Sunyaev) accretion disk.
+
+        This function provides a heuristic or "test" solution for the radial velocity
+        in the disk midplane based on semi-analytic, self-similar scaling relations. The
+        estimate depends on the dimensionless radius and the disk parameters such as
+        viscosity, black hole mass, and accretion rate.
+
+        Parameters
+        ----------
+        par : DiskParams
+            Object containing the adjustable parameters of the accretion disk.
+        dimless_radius : float or np.ndarray
+            Dimensionless radius (in units of Schwarzschild radius).
+
+        Returns
+        -------
+        float or np.ndarray
+            Estimated radial velocity at the given radius in CGS units. Matches the shape of `dimless_radius`.
+
+        """
         dimless_radius = np.asarray(dimless_radius)
         criterion_1 = (par.alpha_viscosity * par.dimless_bhmass) ** (-1 / 8) / 170
         criterion_2 = (
@@ -182,6 +359,26 @@ class StandardDisk:
 
     @staticmethod
     def get_standard_temperature_test(*, par: DiskParams, dimless_radius) -> float | np.ndarray:
+        """Estimate the midplane temperature of a standard (Shakura-Sunyaev) accretion disk.
+
+        This function provides a heuristic "test" solution for the disk temperature based
+        on semi-analytic, self-similar scaling relations. The estimate varies with
+        dimensionless radius and disk parameters such as viscosity, black hole mass, and
+        dimensionless accretion rate.
+
+        Parameters
+        ----------
+        par : DiskParams
+            Object containing the adjustable parameters of the accretion disk.
+        dimless_radius : float or np.ndarray
+            Dimensionless radius (in units of Schwarzschild radius).
+
+        Returns
+        -------
+        float or np.ndarray
+            Estimated midplane temperature at the given radius in Kelvin. Matches the shape of `dimless_radius`.
+
+        """
         dimless_radius = np.asarray(dimless_radius)
         criterion_1 = (par.alpha_viscosity * par.dimless_bhmass) ** (-1 / 8) / 170
         criterion_2 = (
@@ -212,6 +409,26 @@ class StandardDisk:
 
     @staticmethod
     def get_standard_opticaldepth_test(*, par: DiskParams, dimless_radius) -> float | np.ndarray:
+        """Estimate the optical depth of a standard (Shakura-Sunyaev) accretion disk.
+
+        This function provides a heuristic "test" solution for the disk optical depth
+        based on semi-analytic, self-similar scaling relations. The estimate depends on
+        dimensionless radius and disk parameters such as viscosity, black hole mass, and
+        dimensionless accretion rate.
+
+        Parameters
+        ----------
+        par : DiskParams
+            Object containing the adjustable parameters of the accretion disk.
+        dimless_radius : float or np.ndarray
+            Dimensionless radius (in units of Schwarzschild radius).
+
+        Returns
+        -------
+        float or np.ndarray
+            Estimated optical depth at the given radius. Matches the shape of `dimless_radius`.
+
+        """
         dimless_radius = np.asarray(dimless_radius)
         criterion_1 = (par.alpha_viscosity * par.dimless_bhmass) ** (-1 / 8) / 170
         criterion_2 = (
@@ -246,6 +463,31 @@ class StandardDisk:
 
     @staticmethod
     def standard_disk_solver(*, par: DiskParams, dimless_radius: float) -> np.ndarray:
+        """Numerically solve the standard (Shakura-Sunyaev) accretion disk at a given dimensionless radius.
+
+        This function uses heuristic test values for half-thickness, surface density, midplane density,
+        radial velocity, midplane temperature, and optical depth as initial guesses, then refines the
+        solution using a root-finding method (`scipy.optimize.root` with Levenberg-Marquardt).
+
+        Parameters
+        ----------
+        par : DiskParams
+            Object containing the adjustable parameters of the accretion disk.
+        dimless_radius : float
+            Dimensionless radius (in units of Schwarzschild radius) at which to solve the disk structure.
+
+        Returns
+        -------
+        np.ndarray
+            Array containing the solved disk quantities:
+            [halfheight, arealdensity, density, radvel, temperature, opticaldepth]
+
+        Raises
+        ------
+        ValueError
+            If the numerical solver fails to converge.
+
+        """
         halfheight_test = StandardDisk.get_standard_halfheight_test(par=par, dimless_radius=dimless_radius)
         arealdensity_test = StandardDisk.get_standard_arealdensity_test(par=par, dimless_radius=dimless_radius)
         density_test = StandardDisk.get_standard_density_test(par=par, dimless_radius=dimless_radius)
@@ -301,6 +543,44 @@ class StandardDisk:
         par: DiskParams,
         dimless_radius: float | np.ndarray,
     ) -> np.ndarray:
+        """Calculate the solution of the standard accretion disk (SSD) at a given dimensionless radius.
+
+        Parameters
+        ----------
+        par : DiskParams
+            Disk parameters object containing alpha_viscosity, dimless_bhmass, dimless_accrate, etc.
+        dimless_radius : float or ndarray
+            Dimensionless radius (r / r_sch) at which to solve the SSD equations.
+
+        Returns
+        -------
+        result_array : ndarray
+            Structured array with fields:
+                - halfheight : float
+                    Disk half-thickness H at the given radius.
+                - arealdensity : float
+                    Surface density at the given radius.
+                - density : float
+                    Midplane density at the given radius.
+                - radvel : float
+                    Radial velocity at the given radius.
+                - temperature : float
+                    Midplane temperature at the given radius.
+                - opticaldepth : float
+                    Vertical optical depth at the given radius.
+                - angmom : float
+                    Specific angular momentum at the given radius.
+                - coff_eta : float
+                    Dimensionless squared radial flow parameter,representing the
+                    strength of the radial inflow relative to the local
+                    disk thickness and angular velocity.
+
+        Notes
+        -----
+        - For a single input radius, the function returns a single structured element.
+        - For multiple radii, an array of structured elements is returned.
+
+        """
         dimless_radius = np.atleast_1d(dimless_radius)
         result_array = np.zeros(
             len(dimless_radius),

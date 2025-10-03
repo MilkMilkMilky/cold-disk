@@ -277,7 +277,7 @@ class SlimDisk:
         u4 = energy_qrad / apresstoadens / accrate
         u5 = 4 * math.pi * par.alpha_viscosity * arealpressure * angmom / (apresstoadens * accrate * radius)
         u6 = (3 * chandindex_1 - 1) * fun1 / (2 * coff_eta * (chandindex_3 - 1))
-        part1 = u1 + u2 + u3 + u4 - u5 - u6
+        angmom_numerator = u1 + u2 + u3 + u4 - u5 - u6
         d1 = (
             accrate
             * chandindex_1
@@ -290,8 +290,8 @@ class SlimDisk:
             * (3 * chandindex_1 - 1)
             / (2 * math.pi * par.alpha_viscosity * arealpressure * radius * radius * 2 * coff_eta * (chandindex_3 - 1))
         )
-        part2 = d1 - d2 - d3
-        dangmom_dradius = part1 / part2
+        angmom_denominator = d1 - d2 - d3
+        dangmom_dradius = angmom_numerator / angmom_denominator
         fun2 = -(1 + coff_eta) * accrate / (2 * math.pi * par.alpha_viscosity * arealpressure * radius * radius)
         dcoffeta_dradius = fun1 + fun2 * dangmom_dradius
         dangmom_ddimlessradius = dangmom_dradius * radius_sch
@@ -332,11 +332,11 @@ class SlimDisk:
         while True:
             angmomin = SlimDisk.get_slim_angmomin(par=par, dimless_angmomin=dimless_angmomin)
             slimintresult, slimintinfo = SlimDisk.slim_disk_integrator(par=par, angmomin=angmomin)
-            tcur = slimintinfo["tcur"]
-            r_solve_index = np.nonzero(tcur)
-            min_solve_r = np.min(tcur[r_solve_index])
-            dimless_radius_solve_array = indep_array[r_solve_index]
-            slimintresult = slimintresult[r_solve_index]
+            dimless_radius_solve_cur = slimintinfo["tcur"]
+            dimless_radius_solve_index = np.nonzero(dimless_radius_solve_cur)
+            dimless_radius_solve_min = np.min(dimless_radius_solve_cur[dimless_radius_solve_index])
+            dimless_radius_solve_array = indep_array[dimless_radius_solve_index]
+            slimintresult = slimintresult[dimless_radius_solve_index]
             angmom_solve_array, coffeta_solve_array = slimintresult.T
             rveltosvel_solve_array = SlimDisk.get_slim_rveltosvel_fromfirst(
                 par=par,
@@ -347,11 +347,7 @@ class SlimDisk:
             )
             rveltosvel_solve_array = np.asarray(rveltosvel_solve_array)
             rveltosvel_max = np.nanmax(rveltosvel_solve_array[np.isfinite(rveltosvel_solve_array)])
-
-            print("dimless_angmomin:", dimless_angmomin)
-            print("dimless_radius_solve_min:", min_solve_r)
-            print("rveltosvel_max:", rveltosvel_max)
-            if min_solve_r > 3:
+            if dimless_radius_solve_min > 3:
                 dimless_angmomin_max = dimless_angmomin
             else:
                 if rveltosvel_max < 1:
@@ -362,7 +358,7 @@ class SlimDisk:
                     break
             dimless_angmomin = (dimless_angmomin_max + dimless_angmomin_min) / 2
             solve_counter += 1
-            if solve_counter > 30:
+            if solve_counter > 60:
                 slim_solver_result = (dimless_radius_solve_array, angmom_solve_array, coffeta_solve_array)
                 shoot_success = False
                 break

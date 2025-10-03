@@ -3,7 +3,7 @@ from dataclasses import dataclass
 import numpy as np
 
 _alpha_viscosity = np.array([0.1])
-_dimless_accrate = np.array([1000])
+_dimless_accrate = np.array([1])
 _dimless_bhmass = np.array([1e7])
 _gas_index = np.array([3.0])
 _wind_index = np.array([0.0])

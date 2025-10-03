@@ -277,7 +277,7 @@ class SlimDisk:
         u4 = energy_qrad / apresstoadens / accrate
         u5 = 4 * math.pi * par.alpha_viscosity * arealpressure * angmom / (apresstoadens * accrate * radius)
         u6 = (3 * chandindex_1 - 1) * fun1 / (2 * coff_eta * (chandindex_3 - 1))
-        angmom_numerator = u1 + u2 + u3 + u4 - u5 - u6
+        dangmom_numerator = u1 + u2 + u3 + u4 - u5 - u6
         d1 = (
             accrate
             * chandindex_1
@@ -290,14 +290,177 @@ class SlimDisk:
             * (3 * chandindex_1 - 1)
             / (2 * math.pi * par.alpha_viscosity * arealpressure * radius * radius * 2 * coff_eta * (chandindex_3 - 1))
         )
-        angmom_denominator = d1 - d2 - d3
-        dangmom_dradius = angmom_numerator / angmom_denominator
+        dangmom_denominator = d1 - d2 - d3
+        dangmom_dradius = dangmom_numerator / dangmom_denominator
         fun2 = -(1 + coff_eta) * accrate / (2 * math.pi * par.alpha_viscosity * arealpressure * radius * radius)
         dcoffeta_dradius = fun1 + fun2 * dangmom_dradius
         dangmom_ddimlessradius = dangmom_dradius * radius_sch
         dcoffeta_ddimlessradius = dcoffeta_dradius * radius_sch
         deri_arr = np.array([dangmom_ddimlessradius, dcoffeta_ddimlessradius])
         return deri_arr
+
+    @staticmethod
+    def slim_disk_model_output(
+        *,
+        indep_var: np.ndarray,
+        dep_var_0: np.ndarray,
+        dep_var_1: np.ndarray,
+        par: DiskParams,
+        angmomin: float,
+        output_mode: str,
+    ) -> np.ndarray:
+        radius_sch = DiskTools.get_radius_sch(par=par)
+        radius = indep_var * radius_sch
+        angmom, coff_eta = dep_var_0, abs(dep_var_1)
+        accrate = SlimDisk.get_slim_accrate(par=par, radius=radius)
+        dlnaccrate_dradius = SlimDisk.get_slim_dlnaccrate_dradius(par=par, radius=radius)
+        dlnangvelk_dradius = SlimDisk.get_slim_dlnangvelk_dradius(par=par, radius=radius)
+        arealpressure = SlimDisk.get_slim_arealpressure(par=par, radius=radius, angmom=angmom, angmomin=angmomin)
+        arealdensity = SlimDisk.get_slim_arealdensity(
+            par=par,
+            arealpressure=arealpressure,
+            coff_eta=coff_eta,
+            radius=radius,
+        )
+        halfheight = SlimDisk.get_slim_halfheight(
+            par=par,
+            radius=radius,
+            arealpressure=arealpressure,
+            arealdensity=arealdensity,
+        )
+        pressure = np.asarray(SlimDisk.get_slim_pressure(par=par, arealpressure=arealpressure, halfheight=halfheight))
+        density = np.asarray(SlimDisk.get_slim_density(par=par, arealdensity=arealdensity, halfheight=halfheight))
+        radvel = SlimDisk.get_slim_radvel(par=par, radius=radius, arealdensity=arealdensity)
+        soundvel = SlimDisk.get_slim_soundvel(pressure=pressure, density=density)
+        rveltosvel = SlimDisk.get_slim_rveltosvel(radvel=radvel, soundvel=soundvel)
+        match output_mode:
+            case "rveltosvel":
+                slim_output_dtype = [
+                    (name, indep_var.dtype)
+                    for name in [
+                        "rveltosvel",
+                    ]
+                ]
+                slim_output = np.zeros_like(rveltosvel, dtype=slim_output_dtype)
+                slim_output["rveltosvel"] = rveltosvel
+                return slim_output
+
+        temperature = np.array([
+            SlimDisk.get_slim_temperature(pressure=p, density=d) for p, d in zip(pressure, density, strict=True)
+        ])
+        opacity = SlimDisk.get_slim_opacity(par=par, density=density, temperature=temperature)
+        pressure_ratio = SlimDisk.get_slim_pressure_ratio(density=density, temperature=temperature, pressure=pressure)
+        chandindex_1 = SlimDisk.get_slim_chandindex_1(pressure_ratio=pressure_ratio)
+        chandindex_3 = SlimDisk.get_slim_chandindex_3(pressure_ratio=pressure_ratio)
+        fluxz = SlimDisk.get_slim_fluxz(
+            density=density,
+            halfheight=halfheight,
+            opacity=opacity,
+            temperature=temperature,
+        )
+        apresstoadens = SlimDisk.get_slim_apresstoadens(arealpressure=arealpressure, arealdensity=arealdensity)
+        angmomk = SlimDisk.get_slim_angmomk(par=par, radius=radius)
+        energy_qrad = 4 * math.pi * radius * fluxz
+        fun1 = (
+            (angmom**2 - angmomk**2) / (apresstoadens * radius**3)
+            - dlnangvelk_dradius
+            + 2 * (1 + coff_eta) / radius
+            - coff_eta / radius
+            - dlnaccrate_dradius
+        )
+        u1 = (chandindex_1 + 1) / ((chandindex_3 - 1) * radius)
+        u2 = (chandindex_1 - 1) * dlnaccrate_dradius / (chandindex_3 - 1)
+        u3 = (chandindex_1 - 1) * dlnangvelk_dradius / (chandindex_3 - 1)
+        u4 = energy_qrad / apresstoadens / accrate
+        u5 = 4 * math.pi * par.alpha_viscosity * arealpressure * angmom / (apresstoadens * accrate * radius)
+        u6 = (3 * chandindex_1 - 1) * fun1 / (2 * coff_eta * (chandindex_3 - 1))
+        dangmom_numerator = u1 + u2 + u3 + u4 - u5 - u6
+        d1 = (
+            accrate
+            * chandindex_1
+            / (radius * radius * math.pi * par.alpha_viscosity * arealpressure * (chandindex_3 - 1))
+        )
+        d2 = 2 * math.pi * par.alpha_viscosity * arealpressure / (accrate * apresstoadens)
+        d3 = (
+            (1 + coff_eta)
+            * accrate
+            * (3 * chandindex_1 - 1)
+            / (2 * math.pi * par.alpha_viscosity * arealpressure * radius * radius * 2 * coff_eta * (chandindex_3 - 1))
+        )
+        dangmom_denominator = d1 - d2 - d3
+        match output_mode:
+            case "dangmom":
+                slim_output_dtype = [
+                    (name, indep_var.dtype) for name in ["rveltosvel", "dangmom_numerator", "dangmom_denominator"]
+                ]
+                slim_output = np.zeros_like(rveltosvel, dtype=slim_output_dtype)
+                slim_output["rveltosvel"] = rveltosvel
+                slim_output["dangmom_numerator"] = dangmom_numerator
+                slim_output["dangmom_denominator"] = dangmom_denominator
+                return slim_output
+        dangmom_dradius = dangmom_numerator / dangmom_denominator
+        fun2 = -(1 + coff_eta) * accrate / (2 * math.pi * par.alpha_viscosity * arealpressure * radius * radius)
+        dcoffeta_dradius = fun1 + fun2 * dangmom_dradius
+        dangmom_ddimlessradius = dangmom_dradius * radius_sch
+        dcoffeta_ddimlessradius = dcoffeta_dradius * radius_sch
+        match output_mode:
+            case "fulloutput":
+                slim_output_dtype = [
+                    (name, indep_var.dtype)
+                    for name in [
+                        "dimless_radius",
+                        "radius",
+                        "accrate",
+                        "angmom",
+                        "coff_eta",
+                        "angvelk",
+                        "arealpressure",
+                        "arealdensity",
+                        "halfheight",
+                        "pressure",
+                        "density",
+                        "radvel",
+                        "soundvel",
+                        "rveltosvel",
+                        "temperature",
+                        "opacity",
+                        "pressure_ratio",
+                        "chandindex_1",
+                        "chandindex_3",
+                        "fluxz",
+                        "dangmom_numerator",
+                        "dangmom_denominator",
+                        "dangmom_ddimlessradius",
+                        "dcoffeta_ddimlessradius",
+                    ]
+                ]
+                slim_output = np.zeros_like(indep_var, dtype=slim_output_dtype)
+                slim_output["dimless_radius"] = indep_var
+                slim_output["radius"] = radius
+                slim_output["accrate"] = accrate
+                slim_output["angmom"] = angmom
+                slim_output["coff_eta"] = coff_eta
+                slim_output["angvelk"] = angmomk / radius / radius
+                slim_output["arealpressure"] = arealpressure
+                slim_output["arealdensity"] = arealdensity
+                slim_output["halfheight"] = halfheight
+                slim_output["pressure"] = pressure
+                slim_output["density"] = density
+                slim_output["radvel"] = radvel
+                slim_output["soundvel"] = soundvel
+                slim_output["rveltosvel"] = rveltosvel
+                slim_output["temperature"] = temperature
+                slim_output["opacity"] = opacity
+                slim_output["pressure_ratio"] = pressure_ratio
+                slim_output["chandindex_1"] = chandindex_1
+                slim_output["chandindex_3"] = chandindex_3
+                slim_output["fluxz"] = fluxz
+                slim_output["dangmom_numerator"] = dangmom_numerator
+                slim_output["dangmom_denominator"] = dangmom_denominator
+                slim_output["dangmom_ddimlessradius"] = dangmom_ddimlessradius
+                slim_output["dcoffeta_ddimlessradius"] = dcoffeta_ddimlessradius
+                return slim_output
+        raise ValueError("Invalid output_mode")
 
     @staticmethod
     def get_slim_indep_array(*, par: DiskParams) -> np.ndarray:
@@ -368,6 +531,4 @@ class SlimDisk:
             "shoot_succcess": shoot_success,
         }
         return slim_solver_result, slim_solver_info
-
-
 

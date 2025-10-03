@@ -328,13 +328,16 @@ class SlimDisk:
         dimless_angmomin = 1.5
         solve_counter = 0
         rveltosvel_max = 0
+        indep_array = SlimDisk.get_slim_indep_array(par=par)
         while True:
             angmomin = SlimDisk.get_slim_angmomin(par=par, dimless_angmomin=dimless_angmomin)
             slimintresult, slimintinfo = SlimDisk.slim_disk_integrator(par=par, angmomin=angmomin)
-            dimless_radius_solve_array = slimintinfo["tcur"]
-            slimintresult = slimintresult[: dimless_radius_solve_array.shape[0]]
+            tcur = slimintinfo["tcur"]
+            r_solve_index = np.nonzero(tcur)
+            min_solve_r = np.min(tcur[r_solve_index])
+            dimless_radius_solve_array = indep_array[r_solve_index]
+            slimintresult = slimintresult[r_solve_index]
             angmom_solve_array, coffeta_solve_array = slimintresult.T
-            dimless_radius_solve_min = np.min(dimless_radius_solve_array)
             rveltosvel_solve_array = SlimDisk.get_slim_rveltosvel_fromfirst(
                 par=par,
                 dimless_radius=dimless_radius_solve_array,
@@ -343,14 +346,12 @@ class SlimDisk:
                 angmomin=angmomin,
             )
             rveltosvel_solve_array = np.asarray(rveltosvel_solve_array)
-            rveltosvel_max = max(
-                rveltosvel_max,
-                np.nanmax(rveltosvel_solve_array[np.isfinite(rveltosvel_solve_array)]),
-            )
+            rveltosvel_max = np.nanmax(rveltosvel_solve_array[np.isfinite(rveltosvel_solve_array)])
+
             print("dimless_angmomin:", dimless_angmomin)
-            print("dimless_radius_solve_min:", dimless_radius_solve_min)
+            print("dimless_radius_solve_min:", min_solve_r)
             print("rveltosvel_max:", rveltosvel_max)
-            if dimless_radius_solve_min > 3:
+            if min_solve_r > 3:
                 dimless_angmomin_max = dimless_angmomin
             else:
                 if rveltosvel_max < 1:
@@ -373,5 +374,4 @@ class SlimDisk:
         return slim_solver_result, slim_solver_info
 
 
-if __name__ == "__main__":
-    ...
+

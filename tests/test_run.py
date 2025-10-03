@@ -15,11 +15,12 @@ if __name__ == "__main__":
         dimless_radius_in=model_params.dimless_radius_in[0],
         dimless_radius_out=model_params.dimless_radius_out[0],
     )
-    lin = SlimDisk.get_slim_angmomin(par=para, dimless_angmomin=1.99)
-    solve, solveinfo = SlimDisk.slim_disk_integrator(par=para, angmomin=lin)
-    dimless_radius_solve_array = solveinfo["tcur"]
-    slimintresult = solve[: dimless_radius_solve_array.shape[0]]
-    angmom_solve_array, coffeta_solve_array = slimintresult.T
+    lin = SlimDisk.get_slim_angmomin(par=para, dimless_angmomin=1.5)
+    solve, solveinfo = SlimDisk.slim_disk_solver(par=para)
+    # dimless_radius_solve_array = solveinfo["tcur"]
+    # slimintresult = solve[: dimless_radius_solve_array.shape[0]]
+    dimless_radius_solve_array = solve[0]
+    angmom_solve_array, coffeta_solve_array = solve[1], solve[2]
     rveltosvel_solve_array = SlimDisk.get_slim_rveltosvel_fromfirst(
         par=para,
         dimless_radius=dimless_radius_solve_array,
@@ -28,7 +29,9 @@ if __name__ == "__main__":
         angmomin=lin,
     )
     rveltosvel_solve_array = np.asarray(rveltosvel_solve_array)
-
+    print(solveinfo)
+    print(max(rveltosvel_solve_array))
+    print(max(coffeta_solve_array))
     plt.figure(figsize=(15, 5))
 
     # angmom vs radius

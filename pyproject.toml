@@ -68,7 +68,7 @@ build-backend = "setuptools.build_meta"
 
 [tool.pyright]
 include = ["src"]
-pythonVersion = 3.10
+pythonVersion = "3.10"
 
 [tool.mypy]
 files = ["src"]

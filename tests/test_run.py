@@ -1,9 +1,24 @@
+from pathlib import Path
+
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import scipy as sp
 
 from disk_solver import DiskParams, DiskTools, SlimDisk, StandardDisk, cgs_consts
 from parameters import model_params
+
+
+def slimtest_save_csv(par: DiskParams):
+    solveresult, solveinfo = SlimDisk.slim_disk_solver(par=par)
+    print(solveinfo)
+    print(np.max(solveresult["rveltosvel"]))
+    results_df = pd.DataFrame(solveresult)
+    results_df = results_df.set_index("dimless_radius")
+    save_path = Path("./slim_results.csv")
+    save_path.parent.mkdir(parents=True, exist_ok=True)
+    results_df.to_csv(save_path, index=True)
+
 
 if __name__ == "__main__":
     para = DiskParams(
@@ -15,40 +30,4 @@ if __name__ == "__main__":
         dimless_radius_in=model_params.dimless_radius_in[0],
         dimless_radius_out=model_params.dimless_radius_out[0],
     )
-    angmomin = SlimDisk.get_slim_angmomin(par=para, dimless_angmomin=1.839)
-    # solve, solveinfo = SlimDisk.slim_disk_solver(par=para)
-    # dimless_radius_solve_array = solve[0]
-    # angmom_solve_array, coffeta_solve_array = solve[1], solve[2]
-    # rveltosvel_solve_array = SlimDisk.get_slim_rveltosvel_fromfirst(
-    #     par=para,
-    #     dimless_radius=dimless_radius_solve_array,
-    #     angmom=angmom_solve_array,
-    #     coff_eta=coffeta_solve_array,
-    #     angmomin=lin,
-    # )
-    # rveltosvel_solve_array = np.asarray(rveltosvel_solve_array)
-    # print(solveinfo)
-    # print(max(rveltosvel_solve_array))
-    # print(max(coffeta_solve_array))
-    solveresult, solveinfo = SlimDisk.slim_disk_solver(par=para)
-    print(solveinfo)
-    x_data = np.log10(solveresult["dimless_radius"])
-    numerator = solveresult["dangmom_numerator"]
-    denominator = solveresult["dangmom_denominator"]
-
-    scale_factor = 1e10
-    denominator_scaled = denominator * scale_factor
-
-    plt.figure(figsize=(8, 5))
-    plt.plot(x_data, numerator, lw=2, label="dangmom_numerator")
-    plt.plot(x_data, denominator_scaled, lw=2, label=f"dangmom_denominator × {scale_factor}")
-    # plt.xlim(0, 2)
-    # plt.ylim(-1e-10, 1e-10)
-    plt.yscale("symlog", linthresh=1e-8)
-    plt.xlabel("log10(dimless_radius)")
-    plt.ylabel("Value")
-    plt.title("dangmom_numerator & dangmom_denominator vs dimless_radius")
-    plt.grid(True)
-    plt.legend()
-    plt.tight_layout()
-    plt.show()
+    slimtest_save_csv(para)

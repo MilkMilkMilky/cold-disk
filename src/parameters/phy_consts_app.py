@@ -3,6 +3,8 @@ from dataclasses import dataclass
 
 from parameters.phy_consts_fund import consts_fund
 
+__all__ = ["consts_app"]
+
 # ---------------------
 # Derived constants
 # ---------------------
@@ -104,4 +106,4 @@ consts_app = PhyConstsApp(
     parsec=parsec,
 )
 
-__all__ = ["consts_app"]
+

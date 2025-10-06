@@ -3,6 +3,8 @@ from dataclasses import dataclass
 
 from parameters import consts
 
+__all__ = ["DiskParams", "cgs_consts"]
+
 cgs_c = consts.vacuum_light_speed * 100
 cgs_h = consts.planck_constant * 1e7
 cgs_kb = consts.boltzmann_constant * 1e7
@@ -85,6 +87,3 @@ class DiskParams:
     wind_index: float
     dimless_radius_in: float
     dimless_radius_out: float
-
-
-__all__ = ["DiskParams", "cgs_consts"]

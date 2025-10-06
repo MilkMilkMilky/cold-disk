@@ -62,7 +62,7 @@ class ParaspaceGeneratorTools:
         return adjparams
 
     @staticmethod
-    def adjparams_dispatcher(adjparams_obj: _AdjustableParams, dispatch_mode: str) -> np.ndarray:
+    def adjparams_dispatcher(*, adjparams_obj: _AdjustableParams, dispatch_mode: str) -> np.ndarray:
         allowed_modes = ("parasweep", "pairscan", "fullfactorial")
         if dispatch_mode not in allowed_modes:
             raise ValueError(f"dispatch_mode must be one of {allowed_modes}, got '{dispatch_mode}'")
@@ -103,6 +103,47 @@ class ParaspaceGeneratorTools:
 
         return adjparams_space
 
+    @staticmethod
+    def paramspace_init(
+        *,
+        hdf5_file_path: Path,
+        adjparams_obj: _AdjustableParams,
+        dispatch_mode: str,
+        clearfile: bool = False,
+    ) -> None:
+        file_mode = "w" if clearfile else "a"
+
+        with h5py.File(hdf5_file_path, file_mode) as h5file:
+            if "adjparamspace" in h5file:
+                adjparamspace_ds = h5file["adjparamspace"]
+                if not isinstance(adjparamspace_ds, h5py.Dataset):
+                    raise TypeError("'adjparamspace' must be an h5py.Dataset")
+                task_ids = adjparamspace_ds.fields("id")[:]
+                num_tasks = len(task_ids)
+            else:
+                adjparams_space = ParaspaceGeneratorTools.adjparams_dispatcher(
+                    adjparams_obj=adjparams_obj,
+                    dispatch_mode=dispatch_mode,
+                )
+                h5file.create_dataset("adjparamspace", data=adjparams_space, compression="gzip", compression_opts=9)
+                num_tasks = len(adjparams_space)
+                task_ids = np.arange(num_tasks)
+
+            if "taskstate" not in h5file:
+                taskstate_ds = h5file.create_dataset(
+                    "taskstate",
+                    shape=(num_tasks,),
+                    dtype="bool",
+                    compression="gzip",
+                    compression_opts=9,
+                )
+                taskstate_ds[:] = False
+
+            for task_id in task_ids:
+                group_name = f"task_{task_id}"
+                if group_name not in h5file:
+                    h5file.create_group(group_name)
+        return None
 
 if __name__ == "__main__":
     ...

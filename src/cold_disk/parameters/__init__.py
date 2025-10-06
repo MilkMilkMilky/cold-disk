@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING, Any, NoReturn, cast
 
-from parameters import phy_consts_app, phy_consts_fund
-from parameters.model_parameters import model_params
+from cold_disk.parameters import phy_consts_app, phy_consts_fund
+from cold_disk.parameters.model_parameters import model_params
 
 __all__ = ["consts", "model_params"]
 

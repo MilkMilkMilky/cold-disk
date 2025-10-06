@@ -6,7 +6,7 @@ import h5py
 import numpy as np
 import pandas as pd
 
-from parameters import model_params
+from cold_disk.parameters import model_params
 
 
 @dataclass
@@ -35,7 +35,7 @@ class ParaspaceGeneratorTools:
             raise ValueError(f"data_date must be 'YYYYMMDD', got: {data_date}")
 
         current_file_dir = Path(__file__).resolve().parent
-        project_root = (current_file_dir.parent.parent).resolve()
+        project_root = (current_file_dir.parent.parent.parent).resolve()
         data_dir = project_root / "data"
         slimdiskdata_dir = data_dir / "slimdiskdata"
         target_dir_name = f"slimdiskdata_{data_date}"
@@ -145,5 +145,6 @@ class ParaspaceGeneratorTools:
                     h5file.create_group(group_name)
         return None
 
+
 if __name__ == "__main__":
-    ...
+    ParaspaceGeneratorTools.load_slimdisk_datafiles()

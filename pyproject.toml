@@ -37,8 +37,8 @@ where = ["src"]
 
 [tool.setuptools]
 ext-modules = [
-    { name = "parameters.phy_consts_fund", sources = [
-        "src/parameters/phy_consts_fund.c",
+    { name = "cold_disk.parameters.phy_consts_fund", sources = [
+        "src/cold_disk/parameters/phy_consts_fund.c",
     ] },
 ]
 

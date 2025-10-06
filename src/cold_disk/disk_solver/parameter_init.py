@@ -1,7 +1,7 @@
 import math
 from dataclasses import dataclass
 
-from parameters import consts
+from cold_disk.parameters import consts
 
 __all__ = ["DiskParams", "cgs_consts"]
 
@@ -77,6 +77,7 @@ cgs_consts = CGSConsts(
     cgs_kes=cgs_kes,
     cgs_kra=cgs_kra,
 )
+
 
 @dataclass
 class DiskParams:

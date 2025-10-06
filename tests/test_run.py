@@ -5,8 +5,8 @@ import numpy as np
 import pandas as pd
 import scipy as sp
 
-from disk_solver import DiskParams, DiskTools, SlimDisk, StandardDisk, cgs_consts
-from parameters import model_params
+from cold_disk.disk_solver import DiskParams, DiskTools, SlimDisk, StandardDisk, cgs_consts
+from cold_disk.parameters import model_params
 
 
 def slimtest_save_csv(par: DiskParams):

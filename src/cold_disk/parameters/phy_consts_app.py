@@ -1,7 +1,7 @@
 import math
 from dataclasses import dataclass
 
-from parameters.phy_consts_fund import consts_fund
+from cold_disk.parameters.phy_consts_fund import consts_fund
 
 __all__ = ["consts_app"]
 
@@ -105,5 +105,3 @@ consts_app = PhyConstsApp(
     light_year=light_year,
     parsec=parsec,
 )
-
-

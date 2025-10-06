@@ -3,8 +3,8 @@ import math
 import numpy as np
 import scipy as sp
 
-from disk_solver.parameter_init import DiskParams, cgs_consts
-from disk_solver.solve_tools import DiskTools
+from cold_disk.disk_solver.parameter_init import DiskParams, cgs_consts
+from cold_disk.disk_solver.solve_tools import DiskTools
 
 
 class StandardDisk:

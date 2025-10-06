@@ -4,7 +4,7 @@ from typing import Any
 import numpy as np
 import scipy as sp
 
-from disk_solver.parameter_init import DiskParams, cgs_consts
+from cold_disk.disk_solver.parameter_init import DiskParams, cgs_consts
 
 
 class DiskTools:
@@ -185,5 +185,6 @@ class DiskTools:
         accrate_edd = DiskTools.get_accrate_edd(par=par)
         accrate = accrate_edd * dimless_accrate
         return accrate
+
 
 __all__ = ["DiskTools"]

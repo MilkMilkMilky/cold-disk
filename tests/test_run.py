@@ -10,7 +10,7 @@ from parameters import model_params
 
 
 def slimtest_save_csv(par: DiskParams):
-    solveresult, solveinfo = SlimDisk.slim_disk_solver(par=par)
+    solveresult, solveinfo = SlimDisk.slim_disk_odeint_solver(par=par)
     print(solveinfo)
     print(np.max(solveresult["rveltosvel"]))
     results_df = pd.DataFrame(solveresult)

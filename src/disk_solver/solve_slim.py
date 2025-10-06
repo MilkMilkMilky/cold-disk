@@ -1040,7 +1040,7 @@ class SlimDisk:
         return indep_array
 
     @staticmethod
-    def slim_disk_integrator(*, par: DiskParams, angmomin) -> tuple[np.ndarray, dict[str, Any]]:
+    def slim_disk_odeint(*, par: DiskParams, angmomin) -> tuple[np.ndarray, dict[str, Any]]:
         """Integrate the slim disk ODE system over the dimensionless radius array.
 
         This function uses `scipy.integrate.odeint` to solve the system of
@@ -1089,7 +1089,7 @@ class SlimDisk:
         return slimintresult, slimintinfo
 
     @staticmethod
-    def slim_disk_integrate_manager(
+    def slim_disk_odeint_manager(
         *,
         par: DiskParams,
         angmomin,
@@ -1130,7 +1130,7 @@ class SlimDisk:
 
         """
         indep_array = SlimDisk.get_slim_indep_array(par=par)
-        slimintresult, slimintinfo = SlimDisk.slim_disk_integrator(par=par, angmomin=angmomin)
+        slimintresult, slimintinfo = SlimDisk.slim_disk_odeint(par=par, angmomin=angmomin)
         dimless_radius_solve_cur = slimintinfo["tcur"]
         dimless_radius_solve_index = np.nonzero(dimless_radius_solve_cur)
         dimless_radius_solve_min = np.min(dimless_radius_solve_cur[dimless_radius_solve_index])
@@ -1142,7 +1142,7 @@ class SlimDisk:
         return manageresult, manageinfo
 
     @staticmethod
-    def slim_disk_solver(*, par: DiskParams) -> tuple[np.ndarray, dict[str, Any]]:
+    def slim_disk_odeint_solver(*, par: DiskParams) -> tuple[np.ndarray, np.ndarray]:
         """Get the slim disk global solution using a shooting method.
 
         This routine performs a binary-search (shooting) loop over a dimensionless
@@ -1185,15 +1185,15 @@ class SlimDisk:
                 corresponding to the final (accepted or last) trial. When the shooting
                 succeeds this is the accepted full solution; when the shooting fails
                 after the iteration cap it is the most recent attempt.
-            - slim_solver_info : dict
-                Dictionary with keys:
-                    - "dimless_angmomin" : float
-                        Final dimensionless inner angular momentum (the last trial value).
-                    - "shoot_count" : int
-                        Number of shooting iterations performed.
-                    - "shoot_succcess" : bool
-                        True if the shooting terminated successfully, False if the
-                        iteration cap was reached without success.
+            - slim_solver_info : ndarray
+                Numpy structured array of length 1 with fields:
+                - "dimless_angmomin" : float
+                Final dimensionless inner angular momentum (the last trial value).
+                - "shoot_count" : int
+                Number of shooting iterations performed.
+                - "shoot_succcess" : bool
+                True if the shooting terminated successfully, False if the
+                iteration cap was reached without success.
 
         Notes
         -----
@@ -1212,7 +1212,7 @@ class SlimDisk:
         rveltosvel_max = 0
         while True:
             angmomin = SlimDisk.get_slim_angmomin(par=par, dimless_angmomin=dimless_angmomin)
-            manageresult, manageinfo = SlimDisk.slim_disk_integrate_manager(par=par, angmomin=angmomin)
+            manageresult, manageinfo = SlimDisk.slim_disk_odeint_manager(par=par, angmomin=angmomin)
             rveltosvel_solve_array = SlimDisk.slim_disk_model_output(
                 indep_var=manageresult[0],
                 dep_var_0=manageresult[1],
@@ -1252,9 +1252,9 @@ class SlimDisk:
                 )
                 shoot_success = False
                 break
-        slim_solver_info = {
-            "dimless_angmomin": dimless_angmomin,
-            "shoot_count": solve_counter,
-            "shoot_succcess": shoot_success,
-        }
+        slim_solver_info_dtype = [("shoot_count", "i4"), ("dimless_angmomin", "f8"), ("shoot_succcess", "bool")]
+        slim_solver_info = np.zeros(1, dtype=slim_solver_info_dtype)
+        slim_solver_info["shoot_count"] = solve_counter
+        slim_solver_info["dimless_angmomin"] = dimless_angmomin
+        slim_solver_info["shoot_succcess"] = shoot_success
         return slim_solver_result, slim_solver_info

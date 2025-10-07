@@ -81,6 +81,59 @@ cgs_consts = CGSConsts(
 
 @dataclass
 class DiskParams:
+    """Container for a single physical parameter set used in disk-model computations.
+
+    This dataclass defines one specific combination of adjustable parameters
+    describing a single instance of a accretion-disk model.
+    Each field stores a **scalar value** that will be used directly in numerical
+    solvers (e.g. the ODE integrator or the global slim-disk solver).
+
+    It serves as the per-task parameter structure corresponding to one row of
+    the parameter space generated from :class:`_AdjustableParams`.
+
+    Attributes
+    ----------
+    alpha_viscosity : float
+        Dimensionless viscosity parameter.
+    dimless_accrate : float
+        Dimensionless accretion rate, typically normalized by the Eddington rate.
+    dimless_bhmass : float
+        Dimensionless black-hole mass (e.g., in solar-mass units).
+    gas_index : float
+        Polytropic gas index.
+    wind_index : float
+        Disk-wind index parameter describing the outflow strength or scaling.
+    dimless_radius_in : float
+        Inner boundary radius of the computational domain (dimensionless).
+    dimless_radius_out : float
+        Outer boundary radius of the computational domain (dimensionless).
+
+    Notes
+    -----
+    - This class represents a *single model evaluation point* within the
+      multi-dimensional parameter space defined by :class:`_AdjustableParams`.
+    - Instances of this class are typically constructed automatically by higher-level
+      routines (e.g. disk_driver) rather than manually.
+    - All quantities are assumed to be expressed in **dimensionless** or **CGS-based**
+      units consistent with the solver conventions.
+
+    Examples
+    --------
+    >>> from cold_disk.disk_solver.parameter_init import DiskParams
+    >>> dp = DiskParams(
+    ...     alpha_viscosity=0.1,
+    ...     dimless_accrate=1.0,
+    ...     dimless_bhmass=1e8,
+    ...     gas_index=1.4,
+    ...     wind_index=0.0,
+    ...     dimless_radius_in=3.0,
+    ...     dimless_radius_out=100.0,
+    ... )
+    >>> dp.alpha_viscosity
+    0.1
+
+    """
+
     alpha_viscosity: float
     dimless_accrate: float
     dimless_bhmass: float

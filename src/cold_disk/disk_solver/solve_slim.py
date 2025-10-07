@@ -1,9 +1,10 @@
 import math
 import warnings
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
-import scipy as sp
+import scipy.integrate
+import scipy.optimize
 
 from cold_disk.disk_solver.parameter_init import DiskParams, cgs_consts
 from cold_disk.disk_solver.solve_standard import StandardDisk
@@ -370,7 +371,7 @@ class SlimDisk:
             return (cgs_consts.cgs_a / 3) * t**4 + coff_b * t + coff_c
 
         try:
-            temperature = sp.optimize.root_scalar(
+            temperature = scipy.optimize.root_scalar(
                 slim_temperature_func,
                 bracket=[1e-10, 1e8],
                 method="brentq",
@@ -383,7 +384,8 @@ class SlimDisk:
                 f"root_scalar failed with exception: {e}. Falling back to fsolve.",
                 stacklevel=2,
             )
-        temperature_array = sp.optimize.fsolve(slim_temperature_func, 10000)
+        temperature_array = scipy.optimize.fsolve(slim_temperature_func, 10000)
+        temperature_array = cast("np.ndarray", temperature_array)
         for temp in temperature_array:
             if temp > 0:
                 slim_temperature = temp
@@ -1075,7 +1077,7 @@ class SlimDisk:
         """
         indep_array = SlimDisk.get_slim_indep_array(par=par)
         initvalue = SlimDisk.get_slim_initvalue(par=par)
-        slimintresult, slimintinfo = sp.integrate.odeint(
+        slimintresult, slimintinfo = scipy.integrate.odeint(
             func=SlimDisk.slim_disk_model,
             y0=initvalue,
             t=indep_array,

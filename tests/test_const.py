@@ -1,9 +1,11 @@
+import pathlib
+
+import h5py
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy as sp
 
-from disk_solver import DiskParams, DiskTools, SlimDisk, StandardDisk, cgs_consts
-from parameters import model_params
+from cold_disk import ParaspaceGeneratorTools
 
 if __name__ == "__main__":
     ...

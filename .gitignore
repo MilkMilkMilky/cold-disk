@@ -146,4 +146,4 @@ cython_debug/
 .pypirc
 
 # Data file
-.data
+data

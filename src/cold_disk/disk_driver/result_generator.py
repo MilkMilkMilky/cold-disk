@@ -6,6 +6,7 @@ import numpy as np
 
 from cold_disk.disk_solver import DiskParams, SlimDisk, StandardDisk
 
+__all__ = ["ResultGeneratorTools"]
 
 class ResultGeneratorTools:
     @staticmethod

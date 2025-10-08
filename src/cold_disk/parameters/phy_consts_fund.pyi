@@ -1,6 +1,8 @@
 # Stubs for parameters.phy_consts C extension
 # This file provides type hints for the exposed `consts` object.
 
+__all__ = ["consts_fund"]
+
 class PhyConstsFund:
     caesium_frequency: int
     """Caesium frequency (SI, Hz)."""
@@ -46,4 +48,3 @@ class PhyConstsFund:
 
 consts_fund: PhyConstsFund
 
-__all__ = ["consts_fund"]

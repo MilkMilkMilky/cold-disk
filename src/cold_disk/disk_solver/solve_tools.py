@@ -6,6 +6,7 @@ import scipy as sp
 
 from cold_disk.disk_solver.parameter_init import DiskParams, cgs_consts
 
+__all__ = ["DiskTools"]
 
 class DiskTools:
     @staticmethod
@@ -185,6 +186,3 @@ class DiskTools:
         accrate_edd = DiskTools.get_accrate_edd(par=par)
         accrate = accrate_edd * dimless_accrate
         return accrate
-
-
-__all__ = ["DiskTools"]

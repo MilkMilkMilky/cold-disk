@@ -6,6 +6,7 @@ import scipy as sp
 from cold_disk.disk_solver.parameter_init import DiskParams, cgs_consts
 from cold_disk.disk_solver.solve_tools import DiskTools
 
+__all__ = ["StandardDisk"]
 
 class StandardDisk:
     @staticmethod
@@ -615,6 +616,3 @@ class StandardDisk:
         if result_array.size == 1:
             return result_array[0]
         return result_array
-
-
-__all__ = ["StandardDisk"]

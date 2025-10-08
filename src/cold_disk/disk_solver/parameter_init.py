@@ -1,4 +1,3 @@
-import math
 from dataclasses import dataclass
 
 from cold_disk.parameters import consts

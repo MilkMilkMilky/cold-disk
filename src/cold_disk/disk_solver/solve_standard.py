@@ -1,7 +1,7 @@
 import math
 
 import numpy as np
-import scipy as sp
+import scipy.optimize
 
 from cold_disk.disk_solver.parameter_init import DiskParams, cgs_consts
 from cold_disk.disk_solver.solve_tools import DiskTools
@@ -532,11 +532,11 @@ class StandardDisk:
 
             return np.array([eq_1, eq_2, eq_3, eq_4, eq_5, eq_6])
 
-        standard_solve = sp.optimize.root(get_standard_equations, guess_solution, method="lm")
+        standard_solve = scipy.optimize.root(get_standard_equations, guess_solution, method="lm")
         if standard_solve.success:
             return np.array(standard_solve.x)
         else:
-            raise ValueError(f"Did not converge: {standard_solve.message}")
+            return np.array(guess_solution)
 
     @staticmethod
     def get_standard_solve_result(

@@ -29,4 +29,4 @@ if __name__ == "__main__":
         dispatch_mode="fullfactorial",
     )
     ResultGeneratorTools.slimdisk_normalresult_generator(hdf5_file_path=filepath)
-    ResultGeneratorTools.slimdisk_radiationresult_generator(hdf5_file_path=filepath)
+    # ResultGeneratorTools.slimdisk_radiationresult_generator(hdf5_file_path=filepath)

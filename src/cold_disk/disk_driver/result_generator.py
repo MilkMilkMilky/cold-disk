@@ -60,6 +60,10 @@ class ResultGeneratorTools:
         """
         if not hdf5_file_path.exists():
             raise FileNotFoundError(f"HDF5 file not found: {hdf5_file_path}")
+
+        if not hdf5_file_path.stem.startswith("slimdiskdata_"):
+            raise ValueError(f"HDF5 file {hdf5_file_path.name} does not appear to be a slim disk data file")
+
         log_path = hdf5_file_path.parent / f"{hdf5_file_path.stem}_solver.log"
         failed_tasks = []
 
@@ -180,6 +184,10 @@ class ResultGeneratorTools:
         """
         if not hdf5_file_path.exists():
             raise FileNotFoundError(f"HDF5 file not found: {hdf5_file_path}")
+
+        if not hdf5_file_path.stem.startswith("slimdiskdata_"):
+            raise ValueError(f"HDF5 file {hdf5_file_path.name} does not appear to be a slim disk data file")
+
         log_path = hdf5_file_path.parent / f"{hdf5_file_path.stem}_radiation.log"
         failed_tasks = []
 

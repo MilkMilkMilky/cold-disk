@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import scipy as sp
 
-from cold_disk import DiskParams, SlimDisk, model_params
+from cold_disk import DiskParams, ParaspaceGeneratorTools, ResultGeneratorTools, SlimDisk
 
 
 def slimtest_save_csv(par: DiskParams):
@@ -20,13 +20,11 @@ def slimtest_save_csv(par: DiskParams):
 
 
 if __name__ == "__main__":
-    para = DiskParams(
-        alpha_viscosity=model_params.alpha_viscosity[0],
-        dimless_accrate=model_params.dimless_accrate[0],
-        dimless_bhmass=model_params.dimless_bhmass[0],
-        gas_index=model_params.gas_index[0],
-        wind_index=model_params.wind_index[0],
-        dimless_radius_in=model_params.dimless_radius_in[0],
-        dimless_radius_out=model_params.dimless_radius_out[0],
+    filepath = ParaspaceGeneratorTools.load_slimdisk_datafiles(data_date="20251008")
+    adjparams = ParaspaceGeneratorTools.load_adjparams_default()
+    ParaspaceGeneratorTools.paramspace_init(
+        hdf5_file_path=filepath,
+        adjparams_obj=adjparams,
+        dispatch_mode="fullfactorial",
     )
-    slimtest_save_csv(para)
+    ResultGeneratorTools.slimdisk_normalresult_generator(hdf5_file_path=filepath)

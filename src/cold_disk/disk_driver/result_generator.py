@@ -135,7 +135,7 @@ class ResultGeneratorTools:
                 for task_id, err in failed_tasks:
                     f.write(f"Task {task_id} failed: {err}\n")
             else:
-                f.write("All tasks computed successfully.\n")
+                f.write("All slim disk tasks computed successfully.\n")
 
         return None
 

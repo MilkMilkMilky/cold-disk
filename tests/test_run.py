@@ -20,6 +20,16 @@ def slimtest_save_csv(par: DiskParams):
 
 
 if __name__ == "__main__":
+    # para = DiskParams(
+    #     alpha_viscosity=0.1,
+    #     dimless_accrate=10,
+    #     dimless_bhmass=1e7,
+    #     gas_index=3,
+    #     wind_index=0,
+    #     dimless_radius_in=1,
+    #     dimless_radius_out=10000,
+    # )
+    # slimtest_save_csv(par=para)
     filepath = ParaspaceGeneratorTools.load_slimdisk_datafiles(data_date="20251008")
     adjparams = ParaspaceGeneratorTools.load_adjparams_default()
     ParaspaceGeneratorTools.paramspace_init(

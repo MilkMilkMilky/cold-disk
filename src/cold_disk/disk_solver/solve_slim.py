@@ -882,7 +882,7 @@ class SlimDisk:
         match output_mode:
             case "rveltosvel":
                 slim_output_dtype = [
-                    (name, indep_var.dtype)
+                    (name, "f8")
                     for name in [
                         "rveltosvel",
                     ]
@@ -938,7 +938,7 @@ class SlimDisk:
         match output_mode:
             case "dangmom":
                 slim_output_dtype = [
-                    (name, indep_var.dtype) for name in ["rveltosvel", "dangmom_numerator", "dangmom_denominator"]
+                    (name, "f8") for name in ["rveltosvel", "dangmom_numerator", "dangmom_denominator"]
                 ]
                 slim_output = np.zeros_like(rveltosvel, dtype=slim_output_dtype)
                 slim_output["rveltosvel"] = rveltosvel
@@ -953,7 +953,7 @@ class SlimDisk:
         match output_mode:
             case "fulloutput":
                 slim_output_dtype = [
-                    (name, indep_var.dtype)
+                    (name, "f8")
                     for name in [
                         "dimless_radius",
                         "radius",
@@ -1260,3 +1260,94 @@ class SlimDisk:
         slim_solver_info["dimless_angmomin"] = dimless_angmomin
         slim_solver_info["shoot_succcess"] = shoot_success
         return slim_solver_result, slim_solver_info
+
+    @staticmethod
+    def slim_disk_sed_solver(
+        *,
+        par: DiskParams,
+        dimless_radius: np.ndarray,
+        fluxz: np.ndarray,
+    ) -> tuple[np.ndarray, np.ndarray]:
+        """Compute the the radiation characteristics of a slim accretion disk.
+
+        This routine calculates the disk spectral energy distribution (SED)
+        by integrating the local blackbody emission over the disk radius.
+        It also computes the total bolometric luminosity and the effective
+        radiative efficiency relative to the initial mass accretion rate.
+
+        Important
+        ----------
+        - The integration is restricted to **dimensionless radii > 3**, corresponding
+          to the ISCO of a Schwarzschild black hole. Radii below this limit are
+          unstable to numerical evaluation, and including them can lead to
+          serious errors in the SED, bolometric luminosity, and efficiency calculations.
+
+        Parameters
+        ----------
+        par : DiskParams
+            An object of the `DiskParams` class containing the adjustable
+            parameters of the slim disk model.
+        dimless_radius : np.ndarray
+            Array of dimensionless radii corresponding to the slim-disk solution.
+        fluxz : np.ndarray
+            Vertical radiative flux at each radius, used to compute the effective temperature.
+
+        Returns
+        -------
+        tuple
+            - sed_output : np.ndarray
+                Structured array with fields:
+                    - "logfrequency" : float
+                        Logarithm (base 10) of the frequency in Hz.
+                    - "sed" : float
+                        Spectral energy distribution at each frequency (erg/s/Hz).
+            - lum_output : np.ndarray
+                Structured array with fields:
+                    - "lum_bol" : float
+                        Total bolometric luminosity integrated over all frequencies (erg/s).
+                    - "lum_eff" : float
+                        Effective radiative efficiency, i.e. lum_bol / (accretion_rate_init * c^2).
+
+        Notes
+        -----
+        - Frequencies are sampled logarithmically from 10^13 Hz to 10^17 Hz with step 0.01 dex.
+        - The SED is integrated using the trapezoidal rule over the radius array.
+        - Negative signs in the integration formula account for the inward radial flux convention.
+        - Any NaNs or positive infinities arising from numerical issues are replaced with zero
+          before computing bolometric luminosity.
+
+        """
+        log_frequencies = np.arange(13, 17, 0.01)
+        frequencies = np.float_power(10, log_frequencies)
+        sed_frequencies = np.empty(len(log_frequencies))
+        mask = dimless_radius > 3
+        dimless_radius = dimless_radius[mask]
+        temperature_eff = np.asarray(SlimDisk.get_slim_temperature_eff(fluxz=fluxz))[mask]
+        radius_sch = DiskTools.get_radius_sch(par=par)
+        accrate_init = DiskTools.get_accrate_init(par=par)
+        for item, frequency in enumerate(frequencies):
+            dsed_numerator = (
+                4
+                * math.pi
+                * cgs_consts.cgs_h
+                * np.float_power(frequency, 3)
+                / (cgs_consts.cgs_c**2)
+                * radius_sch**2
+                * dimless_radius
+            )
+            dsed_denominator = np.expm1(cgs_consts.cgs_h * frequency / cgs_consts.cgs_kb / temperature_eff)
+            dsed_frequency = 2 * math.pi * dsed_numerator / dsed_denominator
+            sed_frequencies[item] = -scipy.integrate.trapezoid(dsed_frequency, dimless_radius)
+        sed = sed_frequencies * frequencies
+        sed_frequencies_nonenan = np.nan_to_num(sed_frequencies, posinf=0)
+        lum_bol = scipy.integrate.trapezoid(sed_frequencies_nonenan, frequencies)
+        lum_eff = lum_bol / (accrate_init * cgs_consts.cgs_c**2)
+        sed_output_dtype = [("logfrequency", "f8"), ("sed", "f8")]
+        sed_output = np.zeros_like(log_frequencies, dtype=sed_output_dtype)
+        sed_output["logfrequency"] = log_frequencies
+        sed_output["sed"] = sed
+        lum_output_dtype = [("lum_bol", "f8"), ("lum_eff", "f8")]
+        lum_output = np.zeros(1, dtype=lum_output_dtype)
+        lum_output["lum_bol"] = lum_bol
+        lum_output["lum_eff"] = lum_eff
+        return sed_output, lum_output

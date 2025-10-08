@@ -21,7 +21,7 @@ def slimtest_save_csv(par: DiskParams):
 
 
 if __name__ == "__main__":
-    filepath = ParaspaceGeneratorTools.load_slimdisk_datafiles(data_date="20251008")
+    filepath = ParaspaceGeneratorTools.load_disk_datafiles(data_date="20251008", disktype="slim")
     adjparams = ParaspaceGeneratorTools.load_adjparams_default()
     ParaspaceGeneratorTools.paramspace_init(
         hdf5_file_path=filepath,

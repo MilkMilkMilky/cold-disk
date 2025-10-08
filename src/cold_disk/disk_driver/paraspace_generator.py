@@ -98,19 +98,20 @@ class ParaspaceGeneratorTools:
         return utcdate_str
 
     @staticmethod
-    def load_slimdisk_datafiles(*, data_date: str | None = None) -> Path:
-        """Prepare and load the target HDF5 data file for slim-disk data storage.
+    def load_disk_datafiles(*, data_date: str | None = None, disktype: str) -> Path:
+        """Prepare and load the target HDF5 data file for storing disk model data.
 
         This routine constructs (and if necessary creates) a dated subdirectory under
-        the global ``data/slimdiskdata`` folder of the project, following the naming
-        convention::
+        the global ``data/slimdiskdata`` or ``data/standarddiskdata`` folder of the project,
+        depending on `disktype`, following the naming convention::
 
-            data / slimdiskdata / slimdiskdata_YYYYMMDD / slimdiskdata_YYYYMMDD.h5
+            data / <disk_folder> / <disk_folder>_YYYYMMDD / <disk_folder>_YYYYMMDD.h5
 
-        If ``data_date`` is omitted, the current UTC date (as returned by
+        where `<disk_folder>` is either ``slimdiskdata`` or ``standarddiskdata``.
+        If `data_date` is omitted, the current UTC date (as returned by
         :func:`get_current_utcdate`) is used. When the HDF5 file does not exist,
-        it is initialized as an empty file. The function guarantees that the
-        directory structure exists before returning the path.
+        it is initialized as an empty file. The function ensures that the directory
+        structure exists before returning the file path.
 
         Parameters
         ----------
@@ -118,33 +119,38 @@ class ParaspaceGeneratorTools:
             Date string in the format ``'YYYYMMDD'`` specifying which day's
             data directory and file to load. If ``None`` (default), uses the
             current UTC date.
+        disktype : str
+            Type of accretion disk data. Must be either ``'slim'`` or ``'standard'``.
+            Determines the folder and filename used for the HDF5 file.
 
         Returns
         -------
         pathlib.Path
-            Absolute path to the HDF5 file corresponding to the requested
-            (or current) date.
+            Absolute path to the HDF5 file corresponding to the requested date and disk type.
 
         Raises
         ------
         ValueError
-            If ``data_date`` is not a valid 8-digit string in the format ``'YYYYMMDD'``.
+            - If `disktype` is not ``'slim'`` or ``'standard'``.
+            - If `data_date` is not a valid 8-digit string in the format ``'YYYYMMDD'``.
 
         Notes
         -----
-        - The project root is automatically inferred as three levels above
-          the current file's directory.
-        - The function ensures that both the containing directory and the
-          target HDF5 file exist before returning.
+        - The project root is inferred as three levels above the current file's directory.
+        - The function ensures that both the containing directory and the target HDF5
+          file exist before returning.
 
         Examples
         --------
-        >>> ParaspaceGeneratorTools.load_slimdisk_datafiles()
+        >>> ParaspaceGeneratorTools.load_disk_datafiles(disktype="slim")
         PosixPath('/.../data/slimdiskdata/slimdiskdata_20251001/slimdiskdata_20251001.h5')
-        >>> ParaspaceGeneratorTools.load_slimdisk_datafiles(data_date="19491001")
-        PosixPath('/.../data/slimdiskdata/slimdiskdata_19491001/slimdiskdata_19491001.h5')
+        >>> ParaspaceGeneratorTools.load_disk_datafiles(data_date="19491001", disktype="standard")
+        PosixPath('/.../data/standarddiskdata/standarddiskdata_19491001/standarddiskdata_19491001.h5')
 
         """
+        if disktype not in ("slim", "standard"):
+            raise ValueError(f"Invalid disktype '{disktype}', must be 'standard' or 'slim'")
+
         if data_date is None:
             data_date = ParaspaceGeneratorTools.get_current_utcdate()
 
@@ -154,9 +160,10 @@ class ParaspaceGeneratorTools:
         current_file_dir = Path(__file__).resolve().parent
         project_root = (current_file_dir.parent.parent.parent).resolve()
         data_dir = project_root / "data"
-        slimdiskdata_dir = data_dir / "slimdiskdata"
-        target_dir_name = f"slimdiskdata_{data_date}"
-        target_dir = slimdiskdata_dir / target_dir_name
+        disk_map = {"slim": "slimdiskdata", "standard": "standarddiskdata"}
+        diskdata_dir = data_dir / disk_map[disktype]
+        target_dir_name = f"{disk_map[disktype]}_{data_date}"
+        target_dir = diskdata_dir / target_dir_name
         hdf5_file_path = target_dir / f"{target_dir_name}.h5"
         target_dir.mkdir(parents=True, exist_ok=True)
 

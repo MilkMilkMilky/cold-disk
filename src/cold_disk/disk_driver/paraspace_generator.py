@@ -97,54 +97,76 @@ class ParaspaceGeneratorTools:
         return utcdate_str
 
     @staticmethod
-    def load_disk_datafiles(*, data_date: str | None = None, disktype: str) -> Path:
-        """Prepare and load the target HDF5 data file for storing disk model data.
+    def load_disk_datafiles(
+        *,
+        data_date: str | None = None,
+        disktype: str,
+        base_path: str | Path | None = None,
+    ) -> Path:
+        """Prepare and load the target HDF5 data file for storing disk-model data.
 
-        This routine constructs (and if necessary creates) a dated subdirectory under
-        the global ``data/slimdiskdata`` or ``data/standarddiskdata`` folder of the project,
-        depending on `disktype`, following the naming convention::
+        Constructs (and if necessary creates) a dated subdirectory for either
+        slim- or standard-disk data and returns the path to the HDF5 file to be
+        used as the main storage file for model outputs and related datasets.
 
-            data / <disk_folder> / <disk_folder>_YYYYMMDD / <disk_folder>_YYYYMMDD.h5
+        The directory / file layout created is::
 
-        where `<disk_folder>` is either ``slimdiskdata`` or ``standarddiskdata``.
-        If `data_date` is omitted, the current UTC date (as returned by
-        :func:`get_current_utcdate`) is used. When the HDF5 file does not exist,
-        it is initialized as an empty file. The function ensures that the directory
-        structure exists before returning the file path.
+            <data_root>/ <disk_folder> / <disk_folder>_YYYYMMDD / <disk_folder>_YYYYMMDD.h5
+
+        where `<disk_folder>` is selected from ``{'slimdiskdata', 'standarddiskdata'}``
+        according to ``disktype``. If ``data_date`` is omitted, the current UTC
+        date (see :func:`get_current_utcdate`) is used.
 
         Parameters
         ----------
         data_date : str or None, optional
             Date string in the format ``'YYYYMMDD'`` specifying which day's
-            data directory and file to load. If ``None`` (default), uses the
-            current UTC date.
+            data directory and file to load. If ``None`` (default), the current
+            UTC date is used.
         disktype : str
-            Type of accretion disk data. Must be either ``'slim'`` or ``'standard'``.
-            Determines the folder and filename used for the HDF5 file.
+            Disk type identifier, must be either ``'slim'`` or ``'standard'``.
+            Controls which top-level data folder is used.
+        base_path : str or pathlib.Path or None, optional
+            Optional base path for the project workspace. If provided, the
+            function will use ``base_path / 'data'`` as the data root.
+            The provided ``base_path`` is expanded (``~`` handling) and resolved
+            to an absolute path. If ``None`` (default), the project root is
+            inferred as three levels above this file's directory and
+            ``<project_root>/data`` is used.
 
         Returns
         -------
         pathlib.Path
-            Absolute path to the HDF5 file corresponding to the requested date and disk type.
+            Absolute path to the HDF5 file corresponding to the requested date
+            and disk type. If the target directory or file do not exist, they are
+            created (an empty HDF5 file is initialized when missing).
 
         Raises
         ------
         ValueError
-            - If `disktype` is not ``'slim'`` or ``'standard'``.
-            - If `data_date` is not a valid 8-digit string in the format ``'YYYYMMDD'``.
+            - If ``disktype`` is not ``'slim'`` or ``'standard'``.
+            - If ``data_date`` is not a valid 8-digit string in the format ``'YYYYMMDD'``.
+            - If ``base_path`` is provided but does not exist or is not a directory.
 
         Notes
         -----
-        - The project root is inferred as three levels above the current file's directory.
-        - The function ensures that both the containing directory and the target HDF5
-          file exist before returning.
+        - The returned HDF5 file is intended to serve as the main data container
+          for disk-model computations (parameter-space datasets, solver outputs,
+          diagnostic data, etc.).
+        - When ``base_path`` is provided it is processed with ``Path(base_path).expanduser().resolve()``
+          before validation; this allows users to pass ``'~'``-style paths.
+        - The function guarantees the directory structure exists and initializes
+          an empty HDF5 file when necessary.
 
         Examples
         --------
         >>> ParaspaceGeneratorTools.load_disk_datafiles(disktype="slim")
         PosixPath('/.../data/slimdiskdata/slimdiskdata_20251001/slimdiskdata_20251001.h5')
-        >>> ParaspaceGeneratorTools.load_disk_datafiles(data_date="19491001", disktype="standard")
-        PosixPath('/.../data/standarddiskdata/standarddiskdata_19491001/standarddiskdata_19491001.h5')
+
+        >>> ParaspaceGeneratorTools.load_disk_datafiles(
+        ...     data_date="19491001", disktype="standard", base_path="~/projects/cold_disk"
+        ... )
+        PosixPath('/home/user/projects/cold_disk/data/standarddiskdata/standarddiskdata_19491001/standarddiskdata_19491001.h5')
 
         """
         if disktype not in ("slim", "standard"):
@@ -156,11 +178,20 @@ class ParaspaceGeneratorTools:
         if not isinstance(data_date, str) or len(data_date) != 8 or not data_date.isdigit():
             raise ValueError(f"data_date must be 'YYYYMMDD', got: {data_date}")
 
-        current_file_dir = Path(__file__).resolve().parent
-        project_root = (current_file_dir.parent.parent.parent).resolve()
-        data_dir = project_root / "data"
+        if base_path is None:
+            current_file_dir = Path(__file__).resolve().parent
+            project_root = (current_file_dir.parent.parent.parent).resolve()
+            data_root = project_root / "data"
+        else:
+            base_path = Path(base_path).expanduser().resolve()
+            if not base_path.exists():
+                raise ValueError(f"Provided base_path does not exist: {base_path}")
+            if not base_path.is_dir():
+                raise ValueError(f"Provided base_path is not a directory: {base_path}")
+            data_root = base_path / "data"
+
         disk_map = {"slim": "slimdiskdata", "standard": "standarddiskdata"}
-        diskdata_dir = data_dir / disk_map[disktype]
+        diskdata_dir = data_root / disk_map[disktype]
         target_dir_name = f"{disk_map[disktype]}_{data_date}"
         target_dir = diskdata_dir / target_dir_name
         hdf5_file_path = target_dir / f"{target_dir_name}.h5"

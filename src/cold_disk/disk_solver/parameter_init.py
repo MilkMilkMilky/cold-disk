@@ -168,10 +168,10 @@ class DiskParams:
     ...     alpha_viscosity=0.1,
     ...     dimless_accrate=1.0,
     ...     dimless_bhmass=1e8,
-    ...     gas_index=1.4,
+    ...     gas_index=3,
     ...     wind_index=0.0,
     ...     dimless_radius_in=3.0,
-    ...     dimless_radius_out=100.0,
+    ...     dimless_radius_out=10000.0,
     ... )
     >>> dp.alpha_viscosity
     0.1

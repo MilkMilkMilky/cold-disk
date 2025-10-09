@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import scipy as sp
 
-from cold_disk import DiskParams, ParaspaceGeneratorTools, ResultGeneratorTools, SlimDisk
+from cold_disk import DiskParams, ParaspaceGeneratorTools, ResultGeneratorTools, SlimDisk, consts
 
 if __name__ == "__main__":
     filepath = ParaspaceGeneratorTools.load_disk_datafiles(data_date="20251008", disktype="slim")
@@ -18,3 +18,4 @@ if __name__ == "__main__":
     )
     ResultGeneratorTools.slimdisk_normalresult_generator(hdf5_file_path=filepath)
     # ResultGeneratorTools.slimdisk_radiationresult_generator(hdf5_file_path=filepath)
+

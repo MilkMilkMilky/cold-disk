@@ -1,3 +1,33 @@
+"""Module `cold_disk.disk_driver.paraspace_generator`.
+
+Provides tools for generating and managing parameter spaces for accretion disk
+modeling. This module handles the creation of parameter combinations, HDF5 file
+initialization, and parameter space dispatching for batch computations.
+
+The primary class is `ParaspaceGeneratorTools`, which offers static methods for
+parameter space generation, file management, and data organization.
+
+Notes:
+-----
+- Parameter spaces are generated from arrays of adjustable parameters.
+- HDF5 files are used for storing parameter combinations and computation results.
+- Three dispatch modes are supported: 'parasweep', 'pairscan', and 'fullfactorial'.
+- All methods are static and stateless; no instance of `ParaspaceGeneratorTools` is required.
+
+Example:
+-------
+>>> from cold_disk import ParaspaceGeneratorTools
+>>> # Load default parameter ranges
+>>> adjparams = ParaspaceGeneratorTools.load_adjparams_default()
+>>> # Generate parameter space
+>>> space = ParaspaceGeneratorTools.adjparams_dispatcher(adjparams_obj=adjparams, dispatch_mode="fullfactorial")
+>>> # Initialize HDF5 file
+>>> h5path = ParaspaceGeneratorTools.load_disk_datafiles(disktype="slim")
+>>> ParaspaceGeneratorTools.paramspace_init(
+...     hdf5_file_path=h5path, adjparams_obj=adjparams, dispatch_mode="fullfactorial"
+... )
+
+"""
 from dataclasses import dataclass, fields
 from datetime import datetime, timezone
 from pathlib import Path
@@ -74,6 +104,35 @@ class _AdjustableParams:
 
 
 class ParaspaceGeneratorTools:
+    """Collection of static methods for parameter space generation and HDF5 file management.
+
+    This class provides tools for creating parameter spaces from adjustable parameter
+    arrays, managing HDF5 data files, and organizing computation workflows for
+    accretion disk modeling.
+
+    Methods include:
+
+    - `get_current_utcdate`: Get current UTC date string for file timestamping.
+    - `load_disk_datafiles`: Prepare and load HDF5 data files for disk computations.
+    - `load_adjparams_default`: Load default adjustable parameter ranges from model_params.
+    - `adjparams_dispatcher`: Generate parameter space matrix using specified dispatch mode.
+    - `paramspace_init`: Initialize parameter space structure in HDF5 files.
+
+    All methods are static and handle the workflow from parameter space generation
+    to HDF5 file initialization for batch disk computations.
+
+    Notes
+    -----
+    - Parameter spaces can be generated in three modes: 'parasweep' (single parameter
+      variation), 'pairscan' (pairwise parameter scanning), and 'fullfactorial'
+      (Cartesian product of all parameters).
+    - HDF5 files are organized with dated subdirectories and contain parameter
+      space datasets, task state tracking, and result storage groups.
+    - The class works with `_AdjustableParams` instances containing parameter arrays.
+    - All file operations are atomic and include proper error handling.
+
+    """
+
     @staticmethod
     def get_current_utcdate() -> str:
         """Get the current UTC date string in compact numeric format.

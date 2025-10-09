@@ -1,3 +1,37 @@
+"""Module `cold_disk.disk_solver.solve_slim`.
+
+Provides numerical methods for solving the slim accretion disk model. The slim disk
+model is a generalization of the standard disk model that accounts for advective
+cooling, radial pressure gradients, and transonic flow near the inner boundary.
+
+The primary class is `SlimDisk`, which offers static methods for computing
+disk structure quantities, solving the slim disk ODE system, and calculating
+spectral energy distributions.
+
+Notes:
+-----
+- Physical constants are taken from `cgs_consts`.
+- Disk parameters are expected to be instances of `DiskParams`.
+- All methods are static and stateless; no instance of `SlimDisk` is required.
+- The solver uses a shooting method to find global solutions with transonic flow.
+- ODE integration uses fixed tolerances that must not be changed for stability.
+
+Example:
+-------
+>>> from cold_disk import SlimDisk, DiskParams
+>>> par = DiskParams(
+...     alpha_viscosity=0.1,
+...     dimless_accrate=1.0,
+...     dimless_bhmass=1e8,
+...     gas_index=3,
+...     wind_index=0.0,
+...     dimless_radius_in=3.0,
+...     dimless_radius_out=10000.0,
+... )
+>>> result, info = SlimDisk.slim_disk_odeint_solver(par=par)
+>>> print(result["temperature"])  # Central temperature profile
+
+"""
 import math
 import warnings
 from typing import Any, cast
@@ -13,6 +47,62 @@ from cold_disk.disk_solver.solve_tools import DiskTools
 __all__ = ["SlimDisk"]
 
 class SlimDisk:
+    """Collection of static methods for slim accretion disk calculations.
+
+    The slim disk model extends the standard disk model by including:
+    - Advective cooling terms
+    - Radial pressure gradients
+    - Transonic flow near the inner boundary
+    - Generalized adiabatic indices (Chandrasekhar indices)
+    - Power-law disk wind prescription
+
+    Methods include:
+
+    - `get_slim_angvelk`: Compute Keplerian angular velocity.
+    - `get_slim_angmomk`: Compute Keplerian angular momentum.
+    - `get_slim_accrate`: Compute mass accretion rate with wind effects.
+    - `get_slim_dlnaccrate_dradius`: Compute derivative of ln(accretion rate).
+    - `get_slim_dlnangvelk_dradius`: Compute derivative of ln(angular velocity).
+    - `get_slim_angmomin`: Convert dimensionless inner angular momentum to physical units.
+    - `get_slim_arealpressure`: Compute areal pressure.
+    - `get_slim_arealdensity`: Compute areal density.
+    - `get_slim_halfheight`: Compute disk half-thickness.
+    - `get_slim_pressure`: Compute central pressure.
+    - `get_slim_density`: Compute central density.
+    - `get_slim_temperature`: Solve for central temperature from pressure and density.
+    - `get_slim_opacity`: Compute opacity including electron scattering and absorption.
+    - `get_slim_pressure_ratio`: Compute gas pressure to total pressure ratio.
+    - `get_slim_chandindex_1`: Compute first Chandrasekhar generalized adiabatic index.
+    - `get_slim_chandindex_3`: Compute third Chandrasekhar generalized adiabatic index.
+    - `get_slim_fluxz`: Compute vertical radiative flux.
+    - `get_slim_apresstoadens`: Compute areal pressure to areal density ratio.
+    - `get_slim_radvel`: Compute radial velocity.
+    - `get_slim_soundvel`: Compute sound speed.
+    - `get_slim_rveltosvel`: Compute ratio of radial velocity to sound speed.
+    - `get_slim_temperature_eff`: Compute effective temperature from radiative flux.
+    - `get_slim_initvalue`: Get initial values from standard disk solution.
+    - `slim_disk_model`: Define the ODE system for slim disk structure.
+    - `slim_disk_model_output`: Compute physical quantities from ODE solution.
+    - `get_slim_indep_array`: Generate dimensionless radius array for ODE integration.
+    - `slim_disk_odeint`: Integrate the slim disk ODE system.
+    - `slim_disk_odeint_manager`: Process ODE integration results.
+    - `slim_disk_odeint_solver`: Find global solution using shooting method.
+    - `slim_disk_sed_solver`: Compute spectral energy distribution and luminosity.
+
+    All methods are static and expect a `DiskParams` object as input
+    for disk parameter data where applicable.
+
+    Notes
+    -----
+    - The ODE solver uses fixed tolerances (atol=1e-10, rtol=1e-10) that must not
+      be changed for numerical stability.
+    - The shooting method searches for transonic solutions where the radial velocity
+      equals the sound speed at some radius.
+    - Integration step size is fixed at -0.01 and should not be modified.
+    - All physical quantities are computed in CGS units.
+
+    """
+
     @staticmethod
     def get_slim_angvelk(*, par: DiskParams, radius: float | np.ndarray) -> float | np.ndarray:
         """Compute the Keplerian angular velocity in the slim disk model.

@@ -1,3 +1,34 @@
+"""Module `cold_disk.disk_solver.solve_tools`.
+
+Provides utility functions for accretion disk calculations, including
+conversion between dimensionless and physical quantities, black hole mass
+and accretion rate calculations, and general disk-related coefficients.
+
+The primary class is `DiskTools`, which offers static methods for
+common disk computations.
+
+Notes:
+-----
+- Physical constants are taken from `cgs_consts`.
+- Disk parameters are expected to be instances of `DiskParams`.
+- All methods are static and stateless; no instance of `DiskTools` is required.
+
+Example:
+-------
+>>> from cold_disk import DiskTools, DiskParams
+>>> par = DiskParams(
+...     alpha_viscosity=0.1,
+...     dimless_accrate=1.0,
+...     dimless_bhmass=1e8,
+...     gas_index=3,
+...     wind_index=0.0,
+...     dimless_radius_in=3.0,
+...     dimless_radius_out=10000.0,
+... )
+>>> r_sch = DiskTools.get_radius_sch(par=par)
+>>> accrate = DiskTools.get_accrate_init(par=par)
+
+"""
 from collections.abc import Callable
 from typing import Any
 
@@ -9,6 +40,30 @@ from cold_disk.disk_solver.parameter_init import DiskParams, cgs_consts
 __all__ = ["DiskTools"]
 
 class DiskTools:
+    """Collection of static utility methods for accretion disk calculations.
+
+    Methods include:
+
+    - `vectorize_for_radius`: Wrap a scalar function to handle array-like radii.
+    - `get_bhmass`: Compute physical black hole mass from dimensionless mass.
+    - `get_accrate_edd`: Compute Eddington accretion rate from dimensionless mass.
+    - `get_accrate_init`: Compute initial accretion rate at the disk outer boundary.
+    - `get_radius_sch`: Compute Schwarzschild radius of the black hole.
+    - `get_coeff_in`: Compute a coefficient related to the gas/polytropic index.
+    - `get_radius_fromdimless`: Convert dimensionless radius to physical radius.
+    - `get_accrate_fromdimless`: Convert dimensionless accretion rate to physical units.
+
+    All methods are static and expect a `DiskParams` object as input
+    for disk parameter data where applicable.
+
+    Notes
+    -----
+    - Dimensionless quantities are often expressed in units of Schwarzschild radius
+      or relative to the Eddington accretion rate.
+    - CGS units are used consistently throughout the computations.
+
+    """
+
     @staticmethod
     def vectorize_for_radius(func: Callable, on_fail: Any = np.nan) -> Callable:
         """Wrap a function to allow array-like inputs for a single argument `dimless_radius`.

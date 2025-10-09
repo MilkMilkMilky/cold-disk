@@ -1,3 +1,41 @@
+"""Cold Disk Parameters Subpackage.
+
+This subpackage provides access to physical constants and
+default accretion disk parameters used in the cold disk modeling
+framework. It exposes module-level singletons for convenient
+read-only access.
+
+Public API
+----------
+consts : _ConstsWrapper
+    Read-only singleton combining fundamental constants (`consts_fund`)
+    and application constants (`consts_app`). Provides all relevant
+    physical constants with SI units.
+model_params : ModelParams
+    Read-only singleton providing default arrays of adjustable parameters
+    for accretion disk modeling, including viscosity, accretion rate,
+    black hole mass, gas index, wind index, and inner/outer radii.
+
+Notes
+-----
+- All constants in `consts` are read-only; attempts to modify them
+  will raise `AttributeError`.
+- `consts` merges both fundamental physical constants (from
+  `phy_consts_fund`) and derived/application constants
+  (from `phy_consts_app`) for convenient access.
+- `_ConstsWrapper` is an internal class and should not be used directly.
+- `model_params` contains typical example values and can be used
+  as a template for generating parameter grids for simulations.
+
+Examples
+--------
+>>> from cold_disk import consts, model_params
+>>> consts.vacuum_light_speed
+299792458
+>>> model_params.dimless_accrate
+array([0.1, 1.0, 10.0])
+
+"""
 from typing import TYPE_CHECKING, Any, NoReturn, cast
 
 from cold_disk.parameters import phy_consts_app, phy_consts_fund

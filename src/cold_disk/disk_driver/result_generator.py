@@ -1,3 +1,30 @@
+"""Module `cold_disk.disk_driver.result_generator`.
+
+Provides tools for computing and storing accretion disk solutions in HDF5 files.
+This module handles batch computation of disk models, result storage, and
+completion tracking for parameter space exploration.
+
+The primary class is `ResultGeneratorTools`, which offers static methods for
+computing disk solutions and organizing results in structured HDF5 datasets.
+
+Notes:
+-----
+- HDF5 files must contain 'adjparamspace' and 'taskstate' datasets for operation.
+- Task completion is tracked to enable resumable computations.
+- Results are stored in compressed HDF5 datasets with proper error handling.
+- All methods are static and stateless; no instance of `ResultGeneratorTools` is required.
+
+Example:
+-------
+>>> from cold_disk import ResultGeneratorTools
+>>> from pathlib import Path
+>>> # Compute slim disk solutions
+>>> h5path = Path("slimdiskdata_20251001.h5")
+>>> ResultGeneratorTools.slimdisk_normalresult_generator(hdf5_file_path=h5path)
+>>> # Compute radiation outputs
+>>> ResultGeneratorTools.slimdisk_radiationresult_generator(hdf5_file_path=h5path)
+
+"""
 from pathlib import Path
 from typing import cast
 
@@ -15,6 +42,32 @@ _ERR_GROUP_MISMATCH = "HDF5 file incomplete or has extra task groups: mismatch w
 
 
 class ResultGeneratorTools:
+    """Collection of static methods for computing and storing accretion disk solutions.
+
+    This class provides tools for batch computation of disk models, result storage,
+    and completion tracking. It works with HDF5 files containing parameter spaces
+    and manages the computation workflow for both standard and slim disk models.
+
+    Methods include:
+
+    - `slimdisk_normalresult_generator`: Compute and store slim disk structure solutions.
+    - `slimdisk_radiationresult_generator`: Compute and store slim disk radiation outputs.
+    - `standarddisk_normalresult_generator`: Compute and store standard disk solutions.
+
+    All methods operate on HDF5 files with pre-initialized parameter spaces and
+    provide robust error handling and logging for batch computations.
+
+    Notes
+    -----
+    - HDF5 files must contain 'adjparamspace' dataset with parameter combinations
+      and 'taskstate' dataset for completion tracking.
+    - Task groups ('task_0', 'task_1', etc.) are created automatically for result storage.
+    - Failed computations are logged with task ID and error messages.
+    - Results are stored as compressed HDF5 datasets for efficient storage.
+    - All main methods skip already completed tasks to enable resumable computations.
+
+    """
+
     @staticmethod
     def slimdisk_normalresult_generator(*, hdf5_file_path: Path) -> None:
         """Compute and store slim-disk solutions for all tasks in an HDF5 file.

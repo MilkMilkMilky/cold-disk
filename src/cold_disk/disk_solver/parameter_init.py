@@ -1,3 +1,40 @@
+"""Module `cold_disk.disk_solver.parameter_init`.
+
+Provides the core parameter structures and CGS constants for accretion disk modeling.
+
+Public API:
+------------
+- `DiskParams`: Dataclass representing a single set of adjustable parameters
+  for disk simulations.
+- `cgs_consts`: Module-level singleton containing CGS-unit physical constants.
+
+Notes:
+-----
+- `DiskParams` instances store **scalar values** directly used by disk solvers.
+- `cgs_consts` contains standard constants in CGS units (cm, g, s, erg, etc.).
+- Internal arrays and temporary constants used for construction are not part of
+  the public API.
+- Typical usage is for higher-level disk computation routines, not direct
+  manual construction.
+
+Example:
+-------
+>>> from cold_disk import DiskParams, cgs_consts
+>>> dp = DiskParams(
+...     alpha_viscosity=0.1,
+...     dimless_accrate=1.0,
+...     dimless_bhmass=1e8,
+...     gas_index=3,
+...     wind_index=0.0,
+...     dimless_radius_in=3.0,
+...     dimless_radius_out=10000.0,
+... )
+>>> dp.dimless_bhmass
+1e8
+>>> cgs_consts.cgs_c
+2.99792458e10
+
+"""
 from dataclasses import dataclass
 
 from cold_disk.parameters import consts
@@ -21,6 +58,14 @@ cgs_kra = 6.4e22
 
 @dataclass(frozen=True)
 class CGSConsts:
+    """Container for physical constants in CGS units.
+
+    Provides values for fundamental constants (speed of light, Planck constant,
+    gravitational constant, etc.) and standard astrophysical constants (solar mass,
+    Stefan-Boltzmann constant, etc.) in CGS units (cm, g, s, erg, etc.).
+
+    """
+
     cgs_c: float
     """Vacuum light speed (CGS, cm)."""
 

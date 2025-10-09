@@ -1,3 +1,36 @@
+"""Module `cold_disk.disk_solver.solve_standard`.
+
+Provides numerical methods for solving the standard (Shakura-Sunyaev) accretion disk
+model. The standard disk model assumes a thin, optically thick disk with Keplerian
+angular velocity and includes both gas and radiation pressure contributions.
+
+The primary class is `StandardDisk`, which offers static methods for computing
+disk structure quantities and solving the standard disk equations numerically.
+
+Notes:
+-----
+- Physical constants are taken from `cgs_consts`.
+- Disk parameters are expected to be instances of `DiskParams`.
+- All methods are static and stateless; no instance of `StandardDisk` is required.
+- The solver uses heuristic test values as initial guesses and refines solutions
+  using root-finding methods.
+
+Example:
+-------
+>>> from cold_disk import StandardDisk, DiskParams
+>>> par = DiskParams(
+...     alpha_viscosity=0.1,
+...     dimless_accrate=1.0,
+...     dimless_bhmass=1e8,
+...     gas_index=3,
+...     wind_index=0.0,
+...     dimless_radius_in=3.0,
+...     dimless_radius_out=10000.0,
+... )
+>>> result = StandardDisk.get_standard_solve_result(par=par, dimless_radius=10.0)
+>>> print(result["temperature"])  # Midplane temperature
+
+"""
 import math
 
 import numpy as np
@@ -9,6 +42,44 @@ from cold_disk.disk_solver.solve_tools import DiskTools
 __all__ = ["StandardDisk"]
 
 class StandardDisk:
+    """Collection of static methods for standard (Shakura-Sunyaev) accretion disk calculations.
+
+    The standard disk model assumes a thin, optically thick disk with the following
+    characteristics:
+    - Keplerian angular velocity
+    - Both gas and radiation pressure contributions
+    - Rosseland mean opacity including electron scattering and free-free absorption
+    - Viscous heating balanced by radiative cooling
+
+    Methods include:
+
+    - `get_standard_angvel`: Compute Keplerian angular velocity.
+    - `get_standard_pressure`: Compute central pressure (gas + radiation).
+    - `get_standard_soundvel`: Compute sound speed at the midplane.
+    - `get_standard_averopacity`: Compute Rosseland mean opacity.
+    - `get_standard_kineviscocity`: Compute kinematic viscosity.
+    - `get_standard_halfheight_test`: Estimate disk half-thickness using scaling relations.
+    - `get_standard_arealdensity_test`: Estimate surface density using scaling relations.
+    - `get_standard_density_test`: Estimate midplane density using scaling relations.
+    - `get_standard_radvel_test`: Estimate radial velocity using scaling relations.
+    - `get_standard_temperature_test`: Estimate midplane temperature using scaling relations.
+    - `get_standard_opticaldepth_test`: Estimate optical depth using scaling relations.
+    - `standard_disk_solver`: Numerically solve standard disk equations at a given radius.
+    - `get_standard_solve_result`: Calculate complete standard disk solution.
+
+    All methods are static and expect a `DiskParams` object as input
+    for disk parameter data where applicable.
+
+    Notes
+    -----
+    - Test methods (ending with `_test`) provide heuristic estimates based on
+      semi-analytic scaling relations from self-similar solutions.
+    - The numerical solver uses these test values as initial guesses and refines
+      the solution using root-finding methods.
+    - All physical quantities are computed in CGS units.
+
+    """
+
     @staticmethod
     def get_standard_angvel(*, par: DiskParams, dimless_radius: float | np.ndarray) -> float | np.ndarray:
         """Compute the angular velocity of a standard (Shakura-Sunyaev) accretion disk.

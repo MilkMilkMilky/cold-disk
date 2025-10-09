@@ -10,7 +10,7 @@ __all__ = ["StandardDisk"]
 
 class StandardDisk:
     @staticmethod
-    def get_standard_angvel(*, par: DiskParams, dimless_radius) -> float | np.ndarray:
+    def get_standard_angvel(*, par: DiskParams, dimless_radius: float | np.ndarray) -> float | np.ndarray:
         """Compute the angular velocity of a standard (Shakura-Sunyaev) accretion disk.
 
         In the standard disk model, the angular velocity coincides with the Keplerian
@@ -36,7 +36,11 @@ class StandardDisk:
         return standard_angvel
 
     @staticmethod
-    def get_standard_pressure(*, standard_density, standard_temperature) -> float | np.ndarray:
+    def get_standard_pressure(
+        *,
+        standard_density: float | np.ndarray,
+        standard_temperature: float | np.ndarray,
+    ) -> float | np.ndarray:
         """Compute the central pressure of a standard (Shakura-Sunyaev) accretion disk.
 
         The pressure includes contributions from gas pressure and radiation pressure.
@@ -62,7 +66,11 @@ class StandardDisk:
         return standard_pressure
 
     @staticmethod
-    def get_standard_soundvel(*, standard_pressure, standard_density) -> float | np.ndarray:
+    def get_standard_soundvel(
+        *,
+        standard_pressure: float | np.ndarray,
+        standard_density: float | np.ndarray,
+    ) -> float | np.ndarray:
         """Compute the sound speed at the midplane of a standard (Shakura-Sunyaev) accretion disk.
 
         The sound speed is defined from the central pressure and density.
@@ -86,7 +94,11 @@ class StandardDisk:
         return standard_soundvel
 
     @staticmethod
-    def get_standard_averopacity(*, standard_density, standard_temperature) -> float | np.ndarray:
+    def get_standard_averopacity(
+        *,
+        standard_density: float | np.ndarray,
+        standard_temperature: float | np.ndarray,
+    ) -> float | np.ndarray:
         """Compute the Rosseland mean opacity at the midplane of a standard (Shakura-Sunyaev) accretion disk.
 
         The opacity includes contributions from electron scattering and free-free absorption.
@@ -112,7 +124,12 @@ class StandardDisk:
         return standard_averopacity
 
     @staticmethod
-    def get_standard_kineviscocity(*, par: DiskParams, standard_arealdensity, dimless_radius) -> float | np.ndarray:
+    def get_standard_kineviscocity(
+        *,
+        par: DiskParams,
+        standard_arealdensity: float | np.ndarray,
+        dimless_radius: float | np.ndarray,
+    ) -> float | np.ndarray:
         """Compute the kinematic viscosity of a standard (Shakura-Sunyaev) accretion disk.
 
         The kinematic viscosity is derived from the accretion rate and local surface density,
@@ -144,7 +161,7 @@ class StandardDisk:
         return standard_kineviscocity
 
     @staticmethod
-    def get_standard_halfheight_test(*, par: DiskParams, dimless_radius) -> float | np.ndarray:
+    def get_standard_halfheight_test(*, par: DiskParams, dimless_radius: float | np.ndarray) -> float | np.ndarray:
         """Estimate the half-thickness of a standard (Shakura-Sunyaev) accretion disk.
 
         This function provides a heuristic or "test" solution for the disk half-height
@@ -195,7 +212,7 @@ class StandardDisk:
         return standard_halfheight_test
 
     @staticmethod
-    def get_standard_arealdensity_test(*, par: DiskParams, dimless_radius) -> float | np.ndarray:
+    def get_standard_arealdensity_test(*, par: DiskParams, dimless_radius: float | np.ndarray) -> float | np.ndarray:
         """Estimate the surface (areal) density of a standard (Shakura-Sunyaev) accretion disk.
 
         This function provides a heuristic or "test" solution for the disk areal density
@@ -250,7 +267,7 @@ class StandardDisk:
         return standard_arealdensity_test
 
     @staticmethod
-    def get_standard_density_test(*, par: DiskParams, dimless_radius) -> float | np.ndarray:
+    def get_standard_density_test(*, par: DiskParams, dimless_radius: float | np.ndarray) -> float | np.ndarray:
         """Estimate the central mass density of a standard (Shakura-Sunyaev) accretion disk.
 
         This function provides a heuristic or "test" solution for the midplane density
@@ -305,7 +322,7 @@ class StandardDisk:
         return standard_density_test
 
     @staticmethod
-    def get_standard_radvel_test(*, par: DiskParams, dimless_radius) -> float | np.ndarray:
+    def get_standard_radvel_test(*, par: DiskParams, dimless_radius: float | np.ndarray) -> float | np.ndarray:
         """Estimate the radial inflow velocity of a standard (Shakura-Sunyaev) accretion disk.
 
         This function provides a heuristic or "test" solution for the radial velocity
@@ -359,7 +376,7 @@ class StandardDisk:
         return standard_radvel_test
 
     @staticmethod
-    def get_standard_temperature_test(*, par: DiskParams, dimless_radius) -> float | np.ndarray:
+    def get_standard_temperature_test(*, par: DiskParams, dimless_radius: float | np.ndarray) -> float | np.ndarray:
         """Estimate the midplane temperature of a standard (Shakura-Sunyaev) accretion disk.
 
         This function provides a heuristic "test" solution for the disk temperature based
@@ -409,7 +426,7 @@ class StandardDisk:
         return standard_temperature_test
 
     @staticmethod
-    def get_standard_opticaldepth_test(*, par: DiskParams, dimless_radius) -> float | np.ndarray:
+    def get_standard_opticaldepth_test(*, par: DiskParams, dimless_radius: float | np.ndarray) -> float | np.ndarray:
         """Estimate the optical depth of a standard (Shakura-Sunyaev) accretion disk.
 
         This function provides a heuristic "test" solution for the disk optical depth

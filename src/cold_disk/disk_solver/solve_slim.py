@@ -14,7 +14,7 @@ __all__ = ["SlimDisk"]
 
 class SlimDisk:
     @staticmethod
-    def get_slim_angvelk(*, par: DiskParams, radius) -> float | np.ndarray:
+    def get_slim_angvelk(*, par: DiskParams, radius: float | np.ndarray) -> float | np.ndarray:
         """Compute the Keplerian angular velocity in the slim disk model.
 
         All physical quantities are assumed to be expressed in the CGS unit system.
@@ -41,7 +41,7 @@ class SlimDisk:
         return slim_angvelk
 
     @staticmethod
-    def get_slim_angmomk(*, par: DiskParams, radius) -> float | np.ndarray:
+    def get_slim_angmomk(*, par: DiskParams, radius: float | np.ndarray) -> float | np.ndarray:
         """Compute the Keplerian angular momentum in the slim disk model.
 
         All physical quantities are assumed to be expressed in the CGS unit system.
@@ -67,7 +67,7 @@ class SlimDisk:
         return slim_angmomk
 
     @staticmethod
-    def get_slim_accrate(*, par: DiskParams, radius) -> float | np.ndarray:
+    def get_slim_accrate(*, par: DiskParams, radius: float | np.ndarray) -> float | np.ndarray:
         """Compute the mass accretion rate at a given radius in the slim disk model.
 
         All physical quantities are assumed to be expressed in the CGS unit system.
@@ -96,7 +96,7 @@ class SlimDisk:
         return slim_accrate
 
     @staticmethod
-    def get_slim_dlnaccrate_dradius(*, par: DiskParams, radius) -> float | np.ndarray:
+    def get_slim_dlnaccrate_dradius(*, par: DiskParams, radius: float | np.ndarray) -> float | np.ndarray:
         """Compute the derivative of the logarithm of the mass accretion rate.
 
         All physical quantities are assumed to be expressed in the CGS unit system.
@@ -122,7 +122,7 @@ class SlimDisk:
         return slim_dlnaccrate_dradius
 
     @staticmethod
-    def get_slim_dlnangvelk_dradius(*, par: DiskParams, radius) -> float | np.ndarray:
+    def get_slim_dlnangvelk_dradius(*, par: DiskParams, radius: float | np.ndarray) -> float | np.ndarray:
         """Compute the derivative of the logarithm of the Keplerian angular velocity.
 
         All physical quantities are assumed to be expressed in the CGS unit system.
@@ -173,7 +173,13 @@ class SlimDisk:
         return slim_angmomin
 
     @staticmethod
-    def get_slim_arealpressure(*, par: DiskParams, radius, angmom, angmomin) -> float | np.ndarray:
+    def get_slim_arealpressure(
+        *,
+        par: DiskParams,
+        radius: float | np.ndarray,
+        angmom: float | np.ndarray,
+        angmomin: float,
+    ) -> float | np.ndarray:
         """Compute the areal pressure at a given radius in the slim disk model.
 
         All physical quantities are assumed to be expressed in the CGS unit system.
@@ -203,7 +209,13 @@ class SlimDisk:
         return slim_arealpressure
 
     @staticmethod
-    def get_slim_arealdensity(*, par: DiskParams, arealpressure, coff_eta, radius) -> float | np.ndarray:
+    def get_slim_arealdensity(
+        *,
+        par: DiskParams,
+        arealpressure: float | np.ndarray,
+        coff_eta: float | np.ndarray,
+        radius: float | np.ndarray,
+    ) -> float | np.ndarray:
         """Compute the areal density at a given radius in the slim disk model.
 
         All physical quantities are assumed to be expressed in the CGS unit system.
@@ -268,7 +280,12 @@ class SlimDisk:
         return slim_halfheight
 
     @staticmethod
-    def get_slim_pressure(*, par: DiskParams, arealpressure, halfheight) -> float | np.ndarray:
+    def get_slim_pressure(
+        *,
+        par: DiskParams,
+        arealpressure: float | np.ndarray,
+        halfheight: float | np.ndarray,
+    ) -> float | np.ndarray:
         """Compute the central pressure of the slim disk at a given radius.
 
         All physical quantities are assumed to be expressed in the CGS unit system.
@@ -298,7 +315,12 @@ class SlimDisk:
         return slim_pressure
 
     @staticmethod
-    def get_slim_density(*, par: DiskParams, arealdensity, halfheight) -> float | np.ndarray:
+    def get_slim_density(
+        *,
+        par: DiskParams,
+        arealdensity: float | np.ndarray,
+        halfheight: float | np.ndarray,
+    ) -> float | np.ndarray:
         """Compute the central density of the slim disk at a given radius.
 
         All physical quantities are assumed to be expressed in the CGS unit system.
@@ -394,7 +416,12 @@ class SlimDisk:
         raise RuntimeError(f"Failed to solve slim temperature. pressure={pressure}, density={density}")
 
     @staticmethod
-    def get_slim_opacity(*, par: DiskParams, density, temperature) -> float | np.ndarray:
+    def get_slim_opacity(
+        *,
+        par: DiskParams,
+        density: float | np.ndarray,
+        temperature: float | np.ndarray,
+    ) -> float | np.ndarray:
         """Compute the opacity of the slim disk at a given radius.
 
         All physical quantities are assumed to be expressed in the CGS unit system.
@@ -426,7 +453,12 @@ class SlimDisk:
         return slim_opacity
 
     @staticmethod
-    def get_slim_pressure_ratio(*, density, temperature, pressure) -> float | np.ndarray:
+    def get_slim_pressure_ratio(
+        *,
+        density: float | np.ndarray,
+        temperature: float | np.ndarray,
+        pressure: float | np.ndarray,
+    ) -> float | np.ndarray:
         """Compute the ratio of gas pressure to total pressure at a given radius.
 
         All physical quantities are assumed to be expressed in the CGS unit system.
@@ -456,7 +488,7 @@ class SlimDisk:
         return slim_pressure_ratio
 
     @staticmethod
-    def get_slim_chandindex_1(*, pressure_ratio) -> float | np.ndarray:
+    def get_slim_chandindex_1(*, pressure_ratio: float | np.ndarray) -> float | np.ndarray:
         """Compute the first Chandrasekhar generalized adiabatic index at a given radius.
 
         All physical quantities are assumed to be expressed in the CGS unit system.
@@ -478,7 +510,7 @@ class SlimDisk:
         return slim_chandindex_1
 
     @staticmethod
-    def get_slim_chandindex_3(*, pressure_ratio) -> float | np.ndarray:
+    def get_slim_chandindex_3(*, pressure_ratio: float | np.ndarray) -> float | np.ndarray:
         """Compute the third Chandrasekhar generalized adiabatic index at a given radius.
 
         All physical quantities are assumed to be expressed in the CGS unit system.
@@ -500,7 +532,13 @@ class SlimDisk:
         return slim_chandindex_3
 
     @staticmethod
-    def get_slim_fluxz(*, density, halfheight, opacity, temperature) -> float | np.ndarray:
+    def get_slim_fluxz(
+        *,
+        density: float | np.ndarray,
+        halfheight: float | np.ndarray,
+        opacity: float | np.ndarray,
+        temperature: float | np.ndarray,
+    ) -> float | np.ndarray:
         """Compute the vertical radiative flux of the slim disk at a given radius.
 
         All physical quantities are assumed to be expressed in the CGS unit system.
@@ -534,7 +572,10 @@ class SlimDisk:
         return slim_fluxz
 
     @staticmethod
-    def get_slim_apresstoadens(arealpressure, arealdensity) -> float | np.ndarray:
+    def get_slim_apresstoadens(
+        arealpressure: float | np.ndarray,
+        arealdensity: float | np.ndarray,
+    ) -> float | np.ndarray:
         """Compute the ratio of areal pressure to areal density at a given radius.
 
         All physical quantities are assumed to be expressed in the CGS unit system.
@@ -560,7 +601,12 @@ class SlimDisk:
         return slim_apresstoadens
 
     @staticmethod
-    def get_slim_radvel(*, par: DiskParams, radius, arealdensity) -> float | np.ndarray:
+    def get_slim_radvel(
+        *,
+        par: DiskParams,
+        radius: float | np.ndarray,
+        arealdensity: float | np.ndarray,
+    ) -> float | np.ndarray:
         """Compute the radial velocity of the slim disk at a given radius.
 
         All physical quantities are assumed to be expressed in the CGS unit system.
@@ -589,7 +635,7 @@ class SlimDisk:
         return slim_radvel
 
     @staticmethod
-    def get_slim_soundvel(*, pressure, density) -> float | np.ndarray:
+    def get_slim_soundvel(*, pressure: float | np.ndarray, density: float | np.ndarray) -> float | np.ndarray:
         """Compute the sound speed of the slim disk at a given radius.
 
         The sound speed is defined as the square root of the ratio of
@@ -618,7 +664,7 @@ class SlimDisk:
         return slim_soundvel
 
     @staticmethod
-    def get_slim_rveltosvel(*, radvel, soundvel) -> float | np.ndarray:
+    def get_slim_rveltosvel(*, radvel: float | np.ndarray, soundvel: float | np.ndarray) -> float | np.ndarray:
         """Compute the ratio of radial velocity to sound speed at a given radius.
 
         The result is defined as the absolute value of radial velocity divided by
@@ -647,7 +693,7 @@ class SlimDisk:
         return slim_rveltosvel
 
     @staticmethod
-    def get_slim_temperature_eff(*, fluxz) -> float | np.ndarray:
+    def get_slim_temperature_eff(*, fluxz: float | np.ndarray) -> float | np.ndarray:
         """Compute the effective temperature of the slim disk at a given radius.
 
         The effective temperature is derived from the vertical radiative flux
@@ -1043,7 +1089,7 @@ class SlimDisk:
         return indep_array
 
     @staticmethod
-    def slim_disk_odeint(*, par: DiskParams, angmomin) -> tuple[np.ndarray, dict[str, Any]]:
+    def slim_disk_odeint(*, par: DiskParams, angmomin: float) -> tuple[np.ndarray, dict[str, Any]]:
         """Integrate the slim disk ODE system over the dimensionless radius array.
 
         This function uses `scipy.integrate.odeint` to solve the system of
@@ -1095,7 +1141,7 @@ class SlimDisk:
     def slim_disk_odeint_manager(
         *,
         par: DiskParams,
-        angmomin,
+        angmomin: float,
     ) -> tuple[tuple[np.ndarray, np.ndarray, np.ndarray], float]:
         """Process the result of a single ODE integration of the slim disk model.
 

@@ -2,7 +2,7 @@ from collections.abc import Callable
 from typing import Any
 
 import numpy as np
-import scipy as sp
+import scipy.special
 
 from cold_disk.disk_solver.parameter_init import DiskParams, cgs_consts
 
@@ -121,7 +121,7 @@ class DiskTools:
         return radius_sch
 
     @staticmethod
-    def get_coeff_in(*, index) -> float:
+    def get_coeff_in(*, index: float) -> float:
         """Compute a coefficient related to the gas index for disk calculations.
 
         This coefficient is often used in converting between areal and volumetric
@@ -139,13 +139,13 @@ class DiskTools:
             Computed coefficient value.
 
         """
-        numerator = (2**index * sp.special.gamma(index + 1)) ** 2
-        denominator = sp.special.gamma(2 * index + 2)
+        numerator = (2**index * scipy.special.gamma(index + 1)) ** 2
+        denominator = scipy.special.gamma(2 * index + 2)
         coeff_in = numerator / denominator
         return coeff_in
 
     @staticmethod
-    def get_radius_fromdimless(*, par: DiskParams, dimless_radius) -> float | np.ndarray:
+    def get_radius_fromdimless(*, par: DiskParams, dimless_radius: float | np.ndarray) -> float | np.ndarray:
         """Convert a dimensionless radius to a physical radius.
 
         Parameters
@@ -167,7 +167,7 @@ class DiskTools:
         return radius
 
     @staticmethod
-    def get_accrate_fromdimless(*, par: DiskParams, dimless_accrate) -> float:
+    def get_accrate_fromdimless(*, par: DiskParams, dimless_accrate: float) -> float:
         """Convert a dimensionless accretion rate to a physical accretion rate.
 
         Parameters

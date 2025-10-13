@@ -133,7 +133,7 @@ class DiskParams:
     solvers (e.g. the ODE integrator or the global slim-disk solver).
 
     It serves as the per-task parameter structure corresponding to one row of
-    the parameter space generated from :class:`_AdjustableParams`.
+    the parameter space generated from :class:`AdjustableParams`.
 
     Attributes
     ----------
@@ -155,7 +155,7 @@ class DiskParams:
     Notes
     -----
     - This class represents a *single model evaluation point* within the
-      multi-dimensional parameter space defined by :class:`_AdjustableParams`.
+      multi-dimensional parameter space defined by :class:`AdjustableParams`.
     - Instances of this class are typically constructed automatically by higher-level
       routines (e.g. disk_driver) rather than manually.
     - All quantities are assumed to be expressed in **dimensionless** or **CGS-based**

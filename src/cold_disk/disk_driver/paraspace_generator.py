@@ -126,7 +126,7 @@ class ParaspaceGeneratorTools:
       (Cartesian product of all parameters).
     - HDF5 files are organized with dated subdirectories and contain parameter
       space datasets, task state tracking, and result storage groups.
-    - The class works with `_AdjustableParams` instances containing parameter arrays.
+    - The class works with `AdjustableParams` instances containing parameter arrays.
     - All file operations are atomic and include proper error handling.
 
     """

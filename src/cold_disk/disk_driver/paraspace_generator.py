@@ -37,10 +37,10 @@ import numpy as np
 
 from cold_disk.parameters import model_params
 
-__all__ = ["ParaspaceGeneratorTools"]
+__all__ = ["AdjustableParams", "ParaspaceGeneratorTools"]
 
 @dataclass
-class _AdjustableParams:
+class AdjustableParams:
     """Container for the adjustable parameter ranges used in parameter-space generation.
 
     This dataclass defines all tunable physical and model parameters that may vary
@@ -73,14 +73,12 @@ class _AdjustableParams:
     -----
     - Each field stores **an array of candidate values**, not a single scalar.
       This enables automatic expansion into a parameter grid for batch computations.
-    - It is considered an *internal* data structure (leading underscore),
-      but may be inspected or modified by advanced users to customize parameter sweeps.
 
     Examples
     --------
-    >>> from cold_disk.disk_driver.paraspace_generator import _AdjustableParams
+    >>> from cold_disk.disk_driver.paraspace_generator import AdjustableParams
     >>> import numpy as np
-    >>> adj = _AdjustableParams(
+    >>> adj = AdjustableParams(
     ...     alpha_viscosity=np.array([0.01, 0.1]),
     ...     dimless_accrate=np.array([0.1, 1.0, 10.0]),
     ...     dimless_bhmass=np.array([1e7]),
@@ -262,11 +260,11 @@ class ParaspaceGeneratorTools:
         return hdf5_file_path
 
     @staticmethod
-    def load_adjparams_default() -> _AdjustableParams:
+    def load_adjparams_default() -> AdjustableParams:
         """Load the default adjustable-parameter ranges for the parameter-space generator.
 
         This function constructs and returns an instance of
-        :class:`cold_disk.disk_driver.paraspace_generator._AdjustableParams`,
+        :class:`cold_disk.disk_driver.paraspace_generator.AdjustableParams`,
         whose fields are populated from the global singleton ``model_params``.
         Each field in the dataclass corresponds to one adjustable model parameter
         and is represented as a NumPy array specifying its possible values
@@ -278,8 +276,8 @@ class ParaspaceGeneratorTools:
 
         Returns
         -------
-        _AdjustableParams
-            Instance of :class:`cold_disk.disk_driver.paraspace_generator._AdjustableParams`
+        AdjustableParams
+            Instance of :class:`cold_disk.disk_driver.paraspace_generator.AdjustableParams`
             containing NumPy arrays of adjustable parameter ranges:
 
             - ``alpha_viscosity`` : alpha-viscosity parameter
@@ -304,10 +302,10 @@ class ParaspaceGeneratorTools:
         >>> adj.alpha_viscosity
         array([0.01, 0.1, 0.3])
         >>> type(adj)
-        <class 'cold_disk.disk_driver.paraspace_generator._AdjustableParams'>
+        <class 'cold_disk.disk_driver.paraspace_generator.AdjustableParams'>
 
         """
-        adjparams = _AdjustableParams(
+        adjparams = AdjustableParams(
             alpha_viscosity=model_params.alpha_viscosity,
             dimless_accrate=model_params.dimless_accrate,
             dimless_bhmass=model_params.dimless_bhmass,
@@ -319,11 +317,11 @@ class ParaspaceGeneratorTools:
         return adjparams
 
     @staticmethod
-    def adjparams_dispatcher(*, adjparams_obj: _AdjustableParams, dispatch_mode: str) -> np.ndarray:
+    def adjparams_dispatcher(*, adjparams_obj: AdjustableParams, dispatch_mode: str) -> np.ndarray:
         """Generate the full parameter-space matrix according to the specified dispatching mode.
 
         This function expands the adjustable-parameter ranges stored in an
-        :class:`cold_disk.disk_driver.paraspace_generator._AdjustableParams` instance
+        :class:`cold_disk.disk_driver.paraspace_generator.AdjustableParams` instance
         into a structured NumPy array of concrete parameter combinations (the *parameter space*).
         Each row of the output array corresponds to one specific combination of parameters
         that can be passed to a disk-model solver.
@@ -338,8 +336,8 @@ class ParaspaceGeneratorTools:
 
         Parameters
         ----------
-        adjparams_obj : _AdjustableParams
-            Instance of :class:`cold_disk.disk_driver.paraspace_generator._AdjustableParams`
+        adjparams_obj : AdjustableParams
+            Instance of :class:`cold_disk.disk_driver.paraspace_generator.AdjustableParams`
             containing NumPy arrays for each adjustable parameter.
         dispatch_mode : {'parasweep', 'pairscan', 'fullfactorial'}
             Mode controlling how parameter combinations are generated:
@@ -371,7 +369,7 @@ class ParaspaceGeneratorTools:
         - The resulting array serves as the canonical parameter-space table used
           for HDF5 initialization in :func:`ParaspaceGeneratorTools.paramspace_init`.
         - For reproducibility, the field order in the structured array strictly
-          follows the dataclass field order of `_AdjustableParams`.
+          follows the dataclass field order of ``AdjustableParams``.
         - The ``id`` field is automatically assigned as a zero-based index.
 
         Examples
@@ -428,7 +426,7 @@ class ParaspaceGeneratorTools:
     def paramspace_init(
         *,
         hdf5_file_path: Path,
-        adjparams_obj: _AdjustableParams,
+        adjparams_obj: AdjustableParams,
         dispatch_mode: str,
         clearfile: bool = False,
     ) -> None:
@@ -448,8 +446,8 @@ class ParaspaceGeneratorTools:
         hdf5_file_path : Path
             Path to the main HDF5 data file that stores **all simulation content**,
             including the parameter space, solver results, and metadata.
-        adjparams_obj : _AdjustableParams
-            Instance of :class:`cold_disk.disk_driver.paraspace_generator._AdjustableParams`,
+        adjparams_obj : AdjustableParams
+            Instance of :class:`cold_disk.disk_driver.paraspace_generator.AdjustableParams`,
             containing the adjustable-parameter arrays from which the parameter space
             will be constructed.
         dispatch_mode : {'parasweep', 'pairscan', 'fullfactorial'}

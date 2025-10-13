@@ -12,6 +12,9 @@ The package is organized into three main subpackages:
 
 Public API
 ----------
+AdjustableParams : dataclass
+    Dataclass containing arrays of adjustable model parameters used to build
+    parameter spaces for batch computations.
 DiskParams : dataclass
     Dataclass representing a single set of adjustable parameters for disk
     simulations. Stores scalar values directly used by disk solvers.
@@ -83,11 +86,12 @@ Examples
 ... )
 
 """
-from cold_disk.disk_driver import ParaspaceGeneratorTools, ResultGeneratorTools
+from cold_disk.disk_driver import AdjustableParams, ParaspaceGeneratorTools, ResultGeneratorTools
 from cold_disk.disk_solver import DiskParams, DiskTools, SlimDisk, StandardDisk, cgs_consts
 from cold_disk.parameters import consts, model_params
 
 __all__ = [
+    "AdjustableParams",
     "DiskParams",
     "DiskTools",
     "ParaspaceGeneratorTools",

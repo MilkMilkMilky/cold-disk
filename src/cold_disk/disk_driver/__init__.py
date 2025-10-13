@@ -7,6 +7,9 @@ for the cold disk modeling framework.
 
 Public API
 ----------
+AdjustableParams : dataclass
+    Dataclass containing arrays of adjustable model parameters used to build
+    parameter spaces for batch computations.
 ParaspaceGeneratorTools : class
     Collection of static methods for parameter space generation and HDF5 file
     management. Handles creation of parameter combinations, file initialization,
@@ -19,8 +22,8 @@ ResultGeneratorTools : class
 Notes
 -----
 - Both classes contain only static methods and are stateless; no instances are required.
-- `ParaspaceGeneratorTools` works with parameter arrays to generate parameter spaces
-  in three modes: 'parasweep', 'pairscan', and 'fullfactorial'.
+- `ParaspaceGeneratorTools` works with `AdjustableParams` instances to generate
+  parameter spaces in three modes: 'parasweep', 'pairscan', and 'fullfactorial'.
 - `ResultGeneratorTools` operates on HDF5 files with pre-initialized parameter spaces
   and provides robust error handling and logging for batch computations.
 - HDF5 files are organized with dated subdirectories and contain parameter space
@@ -42,7 +45,7 @@ Examples
 >>> ResultGeneratorTools.slimdisk_radiationresult_generator(hdf5_file_path=h5path)
 
 """
-from cold_disk.disk_driver.paraspace_generator import ParaspaceGeneratorTools
+from cold_disk.disk_driver.paraspace_generator import AdjustableParams, ParaspaceGeneratorTools
 from cold_disk.disk_driver.result_generator import ResultGeneratorTools
 
-__all__ = ["ParaspaceGeneratorTools", "ResultGeneratorTools"]
+__all__ = ["AdjustableParams", "ParaspaceGeneratorTools", "ResultGeneratorTools"]

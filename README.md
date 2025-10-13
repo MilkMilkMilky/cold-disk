@@ -181,10 +181,10 @@ Define your own parameter space for targeted studies:
 
 ```python
 import numpy as np
-from cold_disk.disk_driver.paraspace_generator import _AdjustableParams
+from cold_disk.disk_driver.paraspace_generator import AdjustableParams
 
 # Custom parameter ranges
-custom_params = _AdjustableParams(
+custom_params = AdjustableParams(
     alpha_viscosity=np.array([0.01, 0.1, 0.3]),
     dimless_accrate=np.array([0.1, 1.0, 10.0]),
     dimless_bhmass=np.array([1e6, 1e7, 1e8]),
